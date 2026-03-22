@@ -1,0 +1,3119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>gHostWriter — AI Writing Workspace</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Crimson+Pro:ital,wght@0,300;0,400;0,500;1,300;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client" async></script>
+<style>
+:root {
+  /* Ghost palette */
+  --ink:#0d0d0f;          /* near-black */
+  --ink-light:#1a1a22;    /* dark charcoal */
+  --ink-mid:#13131a;      /* between */
+  --surface:#f0eff4;      /* light grey-white main bg */
+  --surface-dark:#e3e1eb; /* slightly deeper surface */
+  --surface-deep:#ccc9d8; /* borders, dividers */
+  --ghost:#9b8faa;        /* greyish lavender — primary accent */
+  --ghost-light:#b8add0;  /* lighter lavender */
+  --ghost-pale:#e8e4f4;   /* very pale lavender tint */
+  --teal:#5a8a8a;         /* grey-teal */
+  --teal-light:#7aafaf;   /* lighter teal */
+  --ember:#b85c2a;        /* burnt orange */
+  --ember-light:#d4733a;  /* lighter ember */
+  --muted:#7a7888;        /* blue-grey muted text */
+  --bc:#5a8a8a;           /* broadcast = teal */
+  --rx:#6a5a8a;           /* receive = deeper lavender */
+  --sw:272px; --hh:54px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Crimson Pro',Georgia,serif;background:var(--surface);color:var(--ink);height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+
+/* ── HEADER ── */
+header{height:var(--hh);background:var(--ink);display:flex;align-items:center;padding:0 18px;gap:10px;flex-shrink:0;border-bottom:2px solid var(--ghost);}
+header h1{font-family:'Playfair Display',serif;font-size:21px;color:var(--ghost-pale);letter-spacing:.02em;flex:1;font-style:italic;}
+header h1 span{color:var(--ghost-light);font-style:normal;font-weight:600;}
+.nav-tabs{display:flex;gap:2px;margin-right:8px;}
+.nav-tab{font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);background:none;border:1px solid transparent;padding:4px 12px;border-radius:3px;cursor:pointer;transition:all .15s;}
+.nav-tab:hover{color:var(--ghost-pale);border-color:#2a2a38;}
+.nav-tab.active{color:var(--ghost-light);border-color:var(--ghost);background:rgba(155,143,170,.12);}
+/* ── SETTINGS PANEL ── */
+.settings-gear{background:none;border:1px solid #2a2a38;color:var(--muted);font-size:15px;width:30px;height:30px;border-radius:3px;cursor:pointer;transition:all .15s;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.settings-gear:hover,.settings-gear.open{color:var(--ghost-light);border-color:var(--ghost);background:rgba(155,143,170,.1);}
+.settings-panel{background:var(--ink-mid);border-bottom:2px solid var(--ghost);overflow:hidden;max-height:0;transition:max-height .25s ease;flex-shrink:0;}
+.settings-panel.open{max-height:60px;}
+.settings-inner{display:flex;align-items:center;gap:8px;padding:8px 18px;flex-wrap:nowrap;}
+.settings-label{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;white-space:nowrap;}
+.settings-inner select,.settings-inner input{font-family:'JetBrains Mono',monospace;font-size:11px;background:#13131a;border:1px solid #2a2a38;color:var(--surface);padding:4px 7px;border-radius:3px;outline:none;}
+.settings-inner select:focus,.settings-inner input:focus{border-color:var(--ghost);}
+.settings-inner input{width:210px;letter-spacing:.04em;}
+.key-eye{background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:2px 3px;}
+.key-eye:hover{color:var(--ghost-light);}
+.settings-close{background:none;border:1px solid #2a2a38;color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.08em;padding:3px 8px;border-radius:3px;cursor:pointer;margin-left:auto;white-space:nowrap;transition:all .15s;}
+.settings-close:hover{border-color:var(--ember);color:var(--ember);}
+
+/* ── WORKSPACE LAYOUT ── */
+.workspace{display:flex;flex:1;overflow:hidden;}
+
+/* ── SIDEBAR ── */
+aside{width:var(--sw);background:var(--ink-light);display:flex;flex-direction:column;flex-shrink:0;border-right:1px solid #252530;overflow:hidden;transition:width .25s ease;}
+aside.collapsed{width:0;border-right:none;}
+.btn-sb-toggle{background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:3px 5px;border-radius:3px;transition:color .15s,background .15s;line-height:1;flex-shrink:0;}
+.btn-sb-toggle:hover{color:var(--ghost-light);background:rgba(155,143,170,.08);}
+.sb-collapse-tab{position:absolute;left:0;top:50%;transform:translateY(-50%);width:18px;height:48px;background:var(--ink-light);border:1px solid #252530;border-left:none;border-radius:0 4px 4px 0;display:none;align-items:center;justify-content:center;cursor:pointer;z-index:10;transition:background .15s;}
+.sb-collapse-tab:hover{background:#252535;}
+.sb-collapse-tab span{font-size:10px;color:var(--muted);}
+.sb-head{padding:12px 14px 10px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #252530;flex-shrink:0;}
+.sb-head span{font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--ghost-light);}
+.sb-hint{font-family:'JetBrains Mono',monospace;font-size:9px;color:#5a5a78;text-transform:uppercase;letter-spacing:.1em;padding:6px 14px 4px;flex-shrink:0;}
+.proj-list{flex:1;overflow-y:auto;padding:4px 0 8px;}
+.proj-list::-webkit-scrollbar{width:3px;}
+.proj-list::-webkit-scrollbar-thumb{background:#2a2a38;border-radius:2px;}
+.sb-footer{padding:10px 14px;border-top:1px solid #252530;flex-shrink:0;}
+.btn-new-proj{background:var(--ghost);border:none;color:var(--ink);font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:6px 14px;border-radius:3px;cursor:pointer;transition:background .15s;width:100%;}
+.btn-new-proj:hover{background:var(--ghost-light);}
+.proj-group{margin-bottom:2px;}
+.proj-hdr{display:flex;align-items:center;padding:6px 14px 6px 10px;cursor:pointer;gap:7px;user-select:none;}
+.proj-hdr:hover{background:rgba(155,143,170,.08);}
+.proj-hdr.open-proj{background:rgba(155,143,170,.12);}
+.proj-ico{width:18px;height:18px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;}
+.proj-chev{font-size:8px;color:var(--muted);transition:transform .2s;flex-shrink:0;}
+.proj-chev.open{transform:rotate(90deg);}
+.proj-nm{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:500;letter-spacing:.04em;color:var(--surface);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.thread-list{padding:0 0 4px;}
+/* project delete button */
+.proj-del{background:none;border:none;color:transparent;font-size:10px;cursor:pointer;padding:2px 4px;border-radius:2px;transition:color .15s,background .15s;flex-shrink:0;line-height:1;}
+.proj-hdr:hover .proj-del{color:#4a4a60;}
+.proj-del:hover{color:var(--ember)!important;background:rgba(184,92,42,.1);}
+
+/* drag handle + thread row */
+.ti{display:flex;align-items:center;padding:4px 8px 4px 0;cursor:pointer;gap:5px;transition:background .1s;position:relative;user-select:none;}
+.ti:hover{background:rgba(155,143,170,.06);}
+.ti.active{background:rgba(155,143,170,.15);}
+.ti.active .ti-nm{color:var(--ghost-pale);}
+.ti.drag-over{border-top:2px solid var(--ghost);}
+.ti-drag{width:20px;display:flex;align-items:center;justify-content:center;color:#252530;font-size:11px;cursor:grab;flex-shrink:0;opacity:.5;transition:opacity .15s;}
+.ti:hover .ti-drag{opacity:1;color:#5a5a70;}
+.ti-drag:active{cursor:grabbing;}
+.ti-ico{font-size:11px;flex-shrink:0;}
+.ti-nm{font-family:'JetBrains Mono',monospace;font-size:11px;color:#a0a0c0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ti-order{font-family:'JetBrains Mono',monospace;font-size:9px;color:#5a5a78;flex-shrink:0;min-width:14px;text-align:right;}
+.ti-badges{display:flex;gap:2px;flex-shrink:0;}
+.b-bc{font-size:7px;background:rgba(90,138,138,.3);color:var(--teal-light);padding:1px 3px;border-radius:5px;font-family:'JetBrains Mono',monospace;}
+.b-rx{font-size:7px;background:rgba(106,90,138,.3);color:var(--ghost-light);padding:1px 3px;border-radius:5px;font-family:'JetBrains Mono',monospace;}
+.ti-cnt{font-family:'JetBrains Mono',monospace;font-size:9px;color:#4a4a60;background:#13131a;padding:1px 4px;border-radius:7px;flex-shrink:0;}
+.ti.active .ti-cnt{background:rgba(155,143,170,.2);color:var(--ghost-light);}
+.btn-add-th{display:flex;align-items:center;gap:5px;padding:4px 10px 4px 34px;background:none;border:none;color:#5a5a78;font-family:'JetBrains Mono',monospace;font-size:10px;cursor:pointer;width:100%;text-align:left;transition:color .15s;letter-spacing:.04em;}
+.btn-add-th:hover{color:var(--ghost-light);}
+/* characters folder row */
+.ti-chars-folder{display:flex;align-items:center;padding:4px 8px 4px 0;gap:5px;position:relative;user-select:none;}
+.ti-chars-folder:hover{background:rgba(155,143,170,.06);}
+.ti-chars-folder.active{background:rgba(155,143,170,.15);}
+.ti-chars-folder .ti-nm{color:#a0a0c0;}
+.ti-chars-folder.active .ti-nm{color:var(--ghost-pale);}
+.ti-chars-chev{font-size:8px;color:#5a5a78;transition:transform .2s;flex-shrink:0;}
+.ti-chars-chev.open{transform:rotate(90deg);}
+/* character sub-row */
+.char-sub-list{padding:0;}
+.char-ti{display:flex;align-items:center;padding:4px 8px 4px 0;cursor:pointer;gap:5px;transition:background .1s;position:relative;user-select:none;}
+.char-ti:hover{background:rgba(155,143,170,.06);}
+.char-ti.active{background:rgba(155,143,170,.15);}
+.char-ti.active .char-ti-nm{color:var(--ghost-pale);}
+.char-ti::before{content:'';position:absolute;left:28px;top:50%;transform:translateY(-50%);width:6px;height:1px;background:#252530;}
+.char-ti-drag{width:20px;display:flex;align-items:center;justify-content:center;color:#252530;font-size:10px;cursor:grab;flex-shrink:0;opacity:.4;transition:opacity .15s;}
+.char-ti:hover .char-ti-drag{opacity:.8;}
+.char-ti-ico{font-size:12px;flex-shrink:0;margin-left:6px;}
+.char-ti-nm{font-family:'JetBrains Mono',monospace;font-size:10px;color:#9090b8;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.char-ti-cnt{font-family:'JetBrains Mono',monospace;font-size:8px;color:#4a4a60;background:#13131a;padding:1px 4px;border-radius:6px;flex-shrink:0;}
+.char-ti.active .char-ti-cnt{background:rgba(155,143,170,.2);color:var(--ghost-light);}
+.btn-add-char{display:flex;align-items:center;gap:4px;padding:3px 8px 3px 44px;background:none;border:none;color:#5a5a78;font-family:'JetBrains Mono',monospace;font-size:9px;cursor:pointer;width:100%;text-align:left;transition:color .15s;letter-spacing:.04em;}
+.btn-add-char:hover{color:var(--ghost-light);}
+/* ── CHARACTER PROFILE VIEW ── */
+#char-view{flex:1;display:none;flex-direction:row;overflow:hidden;position:relative;}
+.char-profile{width:280px;flex-shrink:0;border-right:1px solid var(--surface-deep);display:flex;flex-direction:column;overflow:hidden;background:var(--surface-dark);transition:width .22s ease;}
+.char-profile.prof-collapsed{width:0;border-right:none;overflow:hidden;}
+.prof-collapse-btn{position:absolute;left:280px;top:50%;transform:translateY(-50%);width:14px;height:44px;background:var(--surface-dark);border:1px solid var(--surface-deep);border-left:none;border-radius:0 4px 4px 0;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:6;transition:left .22s ease,background .15s;font-size:10px;color:var(--muted);}
+.prof-collapse-btn:hover{background:var(--surface-deep);color:var(--ghost);}
+.char-profile-header{padding:14px 14px 12px;border-bottom:1px solid var(--surface-deep);flex-shrink:0;display:flex;align-items:flex-start;gap:10px;}
+.char-avatar-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0;}
+.char-avatar{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;background:var(--surface-deep);cursor:pointer;position:relative;overflow:hidden;border:2px solid var(--surface-deep);transition:border-color .2s;}
+.char-avatar:hover{border-color:var(--ghost);}
+.char-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%;position:absolute;inset:0;}
+.char-avatar-overlay{position:absolute;inset:0;background:rgba(0,0,0,.45);border-radius:50%;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s;font-size:16px;color:white;}
+.char-avatar:hover .char-avatar-overlay{opacity:1;}
+.btn-char-img{background:none;border:1px solid var(--surface-deep);color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:7px;text-transform:uppercase;letter-spacing:.07em;padding:2px 6px;border-radius:3px;cursor:pointer;transition:all .15s;width:64px;text-align:center;white-space:nowrap;}
+.btn-char-img:hover{border-color:var(--ghost);color:var(--ghost);}
+/* role with custom option */
+.role-wrap{display:flex;flex-direction:column;gap:5px;}
+.role-custom-row{display:none;gap:4px;}
+.role-custom-row.visible{display:flex;}
+.role-custom-inp{flex:1;font-family:'Crimson Pro',serif;font-size:13px;color:var(--ink);background:white;border:1px solid var(--ghost);border-radius:3px;padding:5px 8px;outline:none;}
+.role-custom-inp::placeholder{color:var(--muted);font-style:italic;}
+.char-profile-name{font-family:'Playfair Display',serif;font-size:15px;color:var(--ink);flex:1;}
+.char-profile-proj{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;}
+.char-profile-body{flex:1;overflow-y:auto;padding:12px 14px;}
+.char-profile-body::-webkit-scrollbar{width:3px;}
+.char-profile-body::-webkit-scrollbar-thumb{background:var(--surface-deep);border-radius:2px;}
+.char-field{margin-bottom:12px;}
+.char-field-label{font-family:'JetBrains Mono',monospace;font-size:8px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:3px;display:flex;align-items:center;justify-content:space-between;}
+.char-field input,.char-field textarea,.char-field select{width:100%;font-family:'Crimson Pro',serif;font-size:13px;color:var(--ink);background:white;border:1px solid var(--surface-deep);border-radius:3px;padding:5px 8px;outline:none;transition:border-color .15s;line-height:1.4;}
+.char-field input:focus,.char-field textarea:focus,.char-field select:focus{border-color:var(--gold);}
+.char-field textarea{resize:none;height:56px;}
+.char-field textarea.tall{height:80px;}
+.char-trait-pills{display:flex;flex-wrap:wrap;gap:4px;min-height:28px;background:white;border:1px solid var(--surface-deep);border-radius:3px;padding:4px 6px;cursor:text;}
+.char-trait-pills:focus-within{border-color:var(--gold);}
+.trait-pill{font-family:'JetBrains Mono',monospace;font-size:9px;background:rgba(155,143,170,.1);color:var(--ink-light);padding:2px 7px;border-radius:10px;display:flex;align-items:center;gap:3px;}
+.trait-pill-del{cursor:pointer;opacity:.5;font-size:10px;line-height:1;}
+.trait-pill-del:hover{opacity:1;color:var(--ember);}
+.trait-input{border:none;outline:none;font-family:'JetBrains Mono',monospace;font-size:9px;min-width:60px;flex:1;background:transparent;color:var(--ink);}
+.char-profile-footer{padding:10px 14px;border-top:1px solid var(--surface-deep);flex-shrink:0;display:flex;flex-direction:column;gap:6px;}
+.btn-gen-profile{background:none;border:1px solid rgba(155,143,170,.4);color:var(--ghost);font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.08em;padding:5px 10px;border-radius:3px;cursor:pointer;transition:all .15s;width:100%;}
+.btn-gen-profile:hover{background:rgba(155,143,170,.08);}
+.btn-gen-profile:disabled{opacity:.4;cursor:not-allowed;}
+.char-bc-row{display:flex;align-items:center;gap:7px;}
+.char-bc-row label{font-family:'Crimson Pro',serif;font-size:12px;color:var(--muted);cursor:pointer;}
+.char-bc-row input{accent-color:var(--bc);cursor:pointer;}
+/* ── CHARACTER ROSTER ── */
+#char-roster-view{flex:1;display:none;flex-direction:column;overflow:hidden;background:var(--surface);}
+.roster-topbar{padding:10px 16px 9px;border-bottom:1px solid var(--surface-deep);flex-shrink:0;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.roster-topbar h2{font-family:'Playfair Display',serif;font-size:16px;font-style:italic;color:var(--ink);flex:1;min-width:0;}
+.roster-controls{display:flex;gap:6px;align-items:center;flex-shrink:0;}
+.roster-sort-sel{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.07em;background:white;border:1px solid var(--surface-deep);color:var(--muted);padding:3px 7px;border-radius:3px;outline:none;cursor:pointer;}
+.roster-sort-sel:focus{border-color:var(--ghost);}
+.roster-grid{flex:1;overflow-y:auto;padding:14px 16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;align-content:start;}
+.roster-grid::-webkit-scrollbar{width:4px;}
+.roster-grid::-webkit-scrollbar-thumb{background:var(--surface-deep);border-radius:3px;}
+.roster-footer{padding:10px 16px;border-top:1px solid var(--surface-deep);flex-shrink:0;}
+.btn-add-char-main{font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.08em;background:var(--ghost);border:none;color:var(--ink);padding:6px 14px;border-radius:3px;cursor:pointer;transition:background .15s;width:100%;}
+.btn-add-char-main:hover{background:var(--ghost-light);}
+.char-card{background:white;border:1.5px solid var(--surface-deep);border-radius:8px;overflow:visible;cursor:pointer;transition:box-shadow .2s,border-color .2s,transform .15s;position:relative;}
+.char-card:hover{box-shadow:0 4px 18px rgba(0,0,0,.1);border-color:var(--ghost);transform:translateY(-2px);}
+.char-card.pinned{border-color:var(--ghost);box-shadow:0 0 0 2px rgba(155,143,170,.2);}
+.char-card-portrait{width:100%;height:110px;background:var(--surface-dark);display:flex;align-items:center;justify-content:center;font-size:44px;position:relative;overflow:hidden;border-radius:6px 6px 0 0;}
+.char-card-portrait img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;}
+/* pin badge */
+.char-pin-btn{position:absolute;top:6px;left:6px;background:rgba(255,255,255,.85);border:none;border-radius:50%;width:22px;height:22px;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s;z-index:3;line-height:1;}
+.char-card:hover .char-pin-btn,.char-card.pinned .char-pin-btn{opacity:1;}
+.char-pin-btn.active{background:var(--ghost);color:white;}
+/* gear settings button */
+.char-gear-btn{position:absolute;top:6px;right:6px;background:rgba(255,255,255,.85);border:none;border-radius:50%;width:22px;height:22px;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s;z-index:3;}
+.char-card:hover .char-gear-btn{opacity:1;}
+.char-gear-btn:hover{background:white;color:var(--ghost);}
+/* gear dropdown */
+.char-gear-menu{position:absolute;top:32px;right:6px;background:white;border:1px solid var(--surface-deep);border-radius:5px;box-shadow:0 4px 14px rgba(0,0,0,.12);z-index:20;display:none;flex-direction:column;min-width:150px;overflow:hidden;}
+.char-gear-menu.open{display:flex;}
+.char-gear-item{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-light);padding:8px 12px;cursor:pointer;transition:background .1s;white-space:nowrap;border:none;background:none;text-align:left;width:100%;}
+.char-gear-item:hover{background:var(--surface-dark);color:var(--ghost);}
+.char-gear-item.danger:hover{background:rgba(184,92,42,.06);color:var(--ember);}
+.char-card-body{padding:9px 11px 11px;}
+.char-card-name{font-family:'Playfair Display',serif;font-size:14px;font-weight:600;color:var(--ink);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.char-card-role{font-family:'JetBrains Mono',monospace;font-size:8px;text-transform:uppercase;letter-spacing:.08em;color:var(--ghost);margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.char-card-traits{display:flex;flex-wrap:wrap;gap:3px;}
+.char-card-trait{font-family:'JetBrains Mono',monospace;font-size:7px;background:var(--ghost-pale);color:var(--ink-light);padding:1px 5px;border-radius:8px;}
+.char-card-msgs{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--muted);margin-top:5px;opacity:.6;}
+.roster-section-label{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);padding:4px 0 6px;grid-column:1/-1;border-bottom:1px solid var(--surface-deep);margin-bottom:2px;}
+/* char chat pane */
+.char-chat{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+/* freeform mode toggle */
+.mode-toggle{display:flex;align-items:center;gap:0;background:var(--surface-deep);border-radius:4px;overflow:hidden;flex-shrink:0;}
+.mode-btn{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.07em;border:none;background:none;color:var(--muted);padding:4px 9px;cursor:pointer;transition:all .15s;}
+.mode-btn.active{background:var(--ink);color:var(--ghost-pale);}
+.mode-btn:not(.active):hover{background:rgba(0,0,0,.07);color:var(--ink);}
+/* freeform note bar */
+.freeform-bar{background:rgba(155,143,170,.08);border-bottom:1px solid rgba(155,143,170,.2);padding:5px 14px;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--ghost);text-transform:uppercase;letter-spacing:.1em;display:flex;align-items:center;gap:7px;flex-shrink:0;}
+.freeform-bar span{opacity:.7;}
+/* ── IMPORT ── */
+.ba-import{border-color:rgba(90,138,138,.5)!important;color:var(--teal-light)!important;}
+.ba-import:hover,.ba-import.on{background:rgba(90,138,138,.12)!important;border-color:var(--teal)!important;}
+.import-drop-zone{border:2px dashed var(--surface-deep);border-radius:5px;padding:14px 12px;text-align:center;cursor:pointer;transition:all .2s;background:white;margin-bottom:8px;}
+.import-drop-zone:hover,.import-drop-zone.drag-active{border-color:var(--ghost);background:rgba(155,143,170,.04);}
+.import-drop-zone .idz-ico{font-size:24px;margin-bottom:5px;}
+.import-drop-zone p{font-family:'Crimson Pro',serif;font-size:13px;color:var(--muted);line-height:1.5;margin:0;}
+.import-drop-zone .idz-types{font-family:'JetBrains Mono',monospace;font-size:8px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);opacity:.6;margin-top:4px;}
+.import-preview{background:var(--surface-dark);border:1px solid var(--surface-deep);border-radius:4px;padding:8px 10px;margin-bottom:8px;display:none;}
+.import-preview-name{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;display:flex;align-items:center;justify-content:space-between;}
+.import-preview-name button{background:none;border:none;color:var(--muted);cursor:pointer;font-size:11px;padding:0 2px;}
+.import-preview-name button:hover{color:var(--ember);}
+.import-preview-text{font-family:'Crimson Pro',serif;font-size:12px;color:var(--ink-light);max-height:80px;overflow-y:auto;line-height:1.5;white-space:pre-wrap;}
+.import-mode-row{display:flex;gap:6px;margin-bottom:4px;}
+.import-mode-pill{font-family:'JetBrains Mono',monospace;font-size:8px;padding:3px 9px;border-radius:12px;border:1px solid var(--surface-deep);background:white;color:var(--muted);cursor:pointer;transition:all .15s;text-transform:uppercase;letter-spacing:.07em;}
+.import-mode-pill:hover{border-color:var(--teal);color:var(--teal);}
+.import-mode-pill.sel{border-color:var(--teal);background:rgba(90,138,138,.1);color:var(--teal);}
+/* ── GOOGLE DRIVE SYNC ── */
+.sync-bar{display:flex;align-items:center;gap:6px;margin-right:6px;}
+.sync-btn{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.08em;border:1px solid #2a2a38;background:none;color:var(--muted);padding:3px 9px;border-radius:3px;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.sync-btn:hover{border-color:var(--ghost);color:var(--ghost);}
+.sync-btn.connected{border-color:rgba(90,138,138,.6);color:var(--teal-light);}
+.sync-btn.connected:hover{background:rgba(90,138,138,.1);}
+.sync-indicator{display:flex;align-items:center;gap:4px;}
+.sync-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;transition:background .3s;}
+.sync-dot.idle{background:#2a2a38;}
+.sync-dot.saving{background:var(--ghost);animation:pulse-save .8s infinite;}
+.sync-dot.saved{background:var(--teal);}
+.sync-dot.error{background:var(--ember);}
+.sync-dot.connecting{background:var(--ghost-light);animation:pulse-save .8s infinite;}
+@keyframes pulse-save{0%,100%{opacity:.4}50%{opacity:1}}
+.sync-status-txt{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;}
+.drive-overlay{position:fixed;inset:0;background:rgba(5,5,10,.8);display:flex;align-items:center;justify-content:center;z-index:200;animation:fi .2s ease;}
+.drive-card{background:var(--surface);border:1px solid var(--surface-deep);border-radius:8px;padding:32px 36px;width:420px;box-shadow:0 24px 64px rgba(0,0,0,.45);text-align:center;}
+.drive-card h2{font-family:'Playfair Display',serif;font-size:22px;margin-bottom:10px;color:var(--ink);}
+.drive-card p{font-family:'Crimson Pro',serif;font-size:15px;color:var(--muted);line-height:1.6;margin-bottom:20px;}
+.drive-card .drive-ico{font-size:44px;margin-bottom:14px;}
+.btn-drive-connect{background:var(--ink);border:none;color:var(--ghost-pale);font-family:'Crimson Pro',serif;font-size:16px;font-weight:600;padding:11px 28px;border-radius:4px;cursor:pointer;width:100%;transition:background .15s;margin-bottom:10px;}
+.btn-drive-connect:hover{background:var(--ink-light);}
+.btn-drive-skip{background:none;border:none;color:var(--muted);font-family:'Crimson Pro',serif;font-size:13px;cursor:pointer;text-decoration:underline;}
+.btn-drive-skip:hover{color:var(--ink);}
+.drive-note{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-top:14px;opacity:.6;}
+#view-critique{background:var(--surface);flex-direction:column;overflow:hidden;}
+.crit-header{padding:14px 20px 12px;border-bottom:1px solid var(--surface-deep);flex-shrink:0;display:flex;align-items:center;gap:12px;}
+.crit-header h2{font-family:'Playfair Display',serif;font-size:18px;font-style:italic;color:var(--ink);flex:1;}
+.crit-body{flex:1;overflow-y:auto;display:flex;gap:0;}
+.crit-config{width:300px;flex-shrink:0;border-right:1px solid var(--surface-deep);padding:20px 18px;display:flex;flex-direction:column;gap:16px;overflow-y:auto;}
+.crit-config-title{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:2px;}
+.crit-scope-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.crit-scope-card{background:white;border:1.5px solid var(--surface-deep);border-radius:5px;padding:8px 10px;cursor:pointer;transition:all .15s;user-select:none;}
+.crit-scope-card:hover{border-color:var(--ghost);background:rgba(155,143,170,.04);}
+.crit-scope-card.selected{border-color:var(--ghost);background:rgba(155,143,170,.08);}
+.crit-scope-card .cs-ico{font-size:18px;margin-bottom:3px;}
+.crit-scope-card .cs-nm{font-family:'Crimson Pro',serif;font-size:13px;font-weight:500;color:var(--ink);}
+.crit-scope-card .cs-desc{font-family:'Crimson Pro',serif;font-size:11px;color:var(--muted);margin-top:1px;line-height:1.3;}
+/* character picker inside scope */
+.char-picker-wrap{display:none;grid-column:1/-1;background:white;border:1.5px solid var(--ghost);border-radius:5px;padding:10px 12px;margin-top:2px;}
+.char-picker-wrap.open{display:block;}
+.char-picker-header{display:flex;align-items:center;gap:7px;margin-bottom:8px;padding-bottom:7px;border-bottom:1px solid var(--surface-deep);}
+.char-picker-header label{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--ghost);cursor:pointer;flex:1;}
+.char-picker-header input{accent-color:var(--ghost);cursor:pointer;}
+.char-picker-list{display:flex;flex-direction:column;gap:5px;max-height:160px;overflow-y:auto;}
+.char-picker-row{display:flex;align-items:center;gap:7px;cursor:pointer;}
+.char-picker-row input{accent-color:var(--ghost);cursor:pointer;flex-shrink:0;}
+.char-picker-row label{font-family:'Crimson Pro',serif;font-size:13px;color:var(--ink);cursor:pointer;display:flex;align-items:center;gap:5px;}
+.char-picker-row .cp-role{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;}
+.crit-focus-checks{display:flex;flex-direction:column;gap:5px;}
+.crit-check{display:flex;align-items:center;gap:7px;cursor:pointer;}
+.crit-check input{accent-color:var(--ghost);cursor:pointer;}
+.crit-check span{font-family:'Crimson Pro',serif;font-size:14px;color:var(--ink);}
+.crit-tone-row{display:flex;gap:6px;flex-wrap:wrap;}
+.crit-tone-pill{font-family:'JetBrains Mono',monospace;font-size:9px;padding:3px 10px;border-radius:12px;border:1px solid var(--surface-deep);background:white;color:var(--muted);cursor:pointer;transition:all .15s;}
+.crit-tone-pill:hover{border-color:var(--ghost);color:var(--ink);}
+.crit-tone-pill.sel{border-color:var(--ghost);background:rgba(155,143,170,.1);color:var(--ink-light);}
+.crit-extra{width:100%;font-family:'Crimson Pro',serif;font-size:13px;color:var(--ink);background:white;border:1px solid var(--surface-deep);border-radius:3px;padding:6px 10px;resize:none;outline:none;height:60px;line-height:1.5;}
+.crit-extra:focus{border-color:var(--ghost);}
+.btn-run-crit{background:var(--ink);border:none;color:var(--ghost-pale);font-family:'Crimson Pro',serif;font-size:15px;font-weight:600;padding:10px 20px;border-radius:4px;cursor:pointer;width:100%;transition:background .15s;}
+.btn-run-crit:hover{background:var(--ink-light);}
+.btn-run-crit:disabled{opacity:.4;cursor:not-allowed;}
+.crit-output-wrap{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.crit-output-header{padding:12px 18px 10px;border-bottom:1px solid var(--surface-deep);flex-shrink:0;display:flex;align-items:center;gap:10px;}
+.crit-output-header span{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);flex:1;}
+.btn-copy-crit{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.07em;background:none;border:1px solid var(--surface-deep);color:var(--muted);padding:3px 9px;border-radius:3px;cursor:pointer;transition:all .15s;}
+.btn-copy-crit:hover{border-color:var(--ghost);color:var(--ghost);}
+.crit-output{flex:1;overflow-y:auto;padding:20px 22px;font-family:'Crimson Pro',serif;font-size:15px;line-height:1.7;color:var(--ink);}
+.crit-output::-webkit-scrollbar{width:4px;}
+.crit-output::-webkit-scrollbar-thumb{background:var(--surface-deep);border-radius:3px;}
+.crit-output p{margin-bottom:10px;}
+.crit-output h3{font-family:'Playfair Display',serif;font-size:16px;margin:16px 0 6px;color:var(--ink);}
+.crit-output strong{font-weight:600;}
+.crit-output em{font-style:italic;}
+.crit-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;color:var(--muted);text-align:center;padding:40px;}
+.cp-ico{font-size:44px;opacity:.35;margin-bottom:14px;}
+.crit-placeholder h3{font-family:'Playfair Display',serif;font-size:20px;font-style:italic;opacity:.5;margin-bottom:7px;}
+.crit-placeholder p{font-size:14px;opacity:.4;max-width:260px;line-height:1.6;}
+.crit-thinking{display:flex;align-items:center;gap:10px;padding:20px;font-family:'Crimson Pro',serif;font-size:15px;color:var(--muted);font-style:italic;}
+/* confirm modal */
+.confirm-modal{width:360px;}
+.confirm-modal p{font-family:'Crimson Pro',serif;font-size:15px;color:var(--ink-light);line-height:1.6;margin-bottom:4px;}
+.confirm-modal .warn{color:var(--ember);font-size:13px;font-family:'JetBrains Mono',monospace;margin-top:6px;display:block;}
+.btn-confirm-del{background:var(--ember);border:none;color:white;font-family:'Crimson Pro',serif;font-size:14px;font-weight:600;padding:7px 20px;border-radius:3px;cursor:pointer;}
+.btn-confirm-del:hover{background:#a04010;}
+
+/* ── MAIN ── */
+main{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--parchment);}
+
+/* ── VIEWS (chat vs flow map) ── */
+#view-chat{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+#view-flow{flex:1;display:none;flex-direction:column;overflow:hidden;background:var(--parchment);}
+
+/* ── THREAD TOPBAR ── */
+.topbar{background:var(--surface-dark);border-bottom:1px solid var(--surface-deep);flex-shrink:0;}
+.topbar-r1{height:50px;display:flex;align-items:center;padding:0 14px;gap:9px;}
+.tb-ico{font-size:18px;}
+.tb-info{flex:1;min-width:0;}
+.tb-nm{font-family:'Playfair Display',serif;font-size:15px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tb-path{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;}
+.tb-acts{display:flex;gap:4px;flex-shrink:0;}
+.ba{background:none;border:1px solid var(--surface-deep);color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:9px;padding:3px 8px;border-radius:3px;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;transition:all .15s;white-space:nowrap;}
+.ba:hover{border-color:var(--gold);color:var(--gold);background:rgba(155,143,170,.05);}
+.ba.on{border-color:var(--gold);color:var(--gold);background:rgba(155,143,170,.1);}
+.ba.danger:hover{border-color:var(--ember);color:var(--ember);background:rgba(184,92,42,.05);}
+.ba-bc{border-color:rgba(74,103,65,.5)!important;color:#7ab870!important;}
+.ba-bc:hover,.ba-bc.on{background:rgba(74,103,65,.12)!important;border-color:var(--bc)!important;}
+.ba-rx{border-color:rgba(58,90,122,.5)!important;color:#7ab0d8!important;}
+.ba-rx:hover,.ba-rx.on{background:rgba(58,90,122,.12)!important;border-color:var(--rx)!important;}
+
+/* sliding panels */
+.cpanel{overflow:hidden;transition:max-height .3s ease;max-height:0;}
+.cpanel.open{max-height:380px;overflow-y:auto;}
+.cpi{padding:11px 14px 13px;border-top:1px solid var(--surface-deep);}
+.cpi-green{background:rgba(74,103,65,.06);}
+.cpi-blue{background:rgba(58,90,122,.05);}
+.cpi-plain{background:var(--parchment);}
+.pt{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.12em;margin-bottom:9px;}
+.pt-g{color:#5a9050;} .pt-b{color:#4a80a8;} .pt-m{color:var(--muted);}
+.bc-toggles{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:9px;}
+.tpill{cursor:pointer;user-select:none;}
+.tpill input{display:none;}
+.tpill-lbl{font-family:'Crimson Pro',serif;font-size:13px;color:var(--muted);padding:3px 11px;border-radius:20px;border:1px solid var(--surface-deep);background:white;transition:all .15s;cursor:pointer;display:block;}
+.tpill.g input:checked+.tpill-lbl{background:rgba(74,103,65,.12);border-color:var(--bc);color:#4a8040;}
+.bc-notes-w label{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);display:block;margin-bottom:4px;}
+.bc-notes-w textarea{font-family:'Crimson Pro',serif;font-size:13px;color:var(--ink);background:white;border:1px solid var(--surface-deep);border-radius:3px;padding:6px 10px;resize:none;outline:none;height:58px;width:100%;line-height:1.5;}
+.bc-notes-w textarea:focus{border-color:var(--bc);}
+.btn-gen{margin-top:6px;background:none;border:1px solid rgba(74,103,65,.4);color:#5a9050;font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.08em;padding:3px 9px;border-radius:3px;cursor:pointer;transition:all .15s;}
+.btn-gen:hover{background:rgba(74,103,65,.1);border-color:var(--bc);}
+.btn-gen:disabled{opacity:.4;cursor:not-allowed;}
+.gen-st{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-left:7px;}
+.sum-preview{margin-top:7px;}
+.sum-plbl{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:3px;}
+.sum-ptxt{font-family:'Crimson Pro',serif;font-size:13px;color:var(--ink);background:white;border:1px solid var(--surface-deep);border-radius:3px;padding:5px 9px;line-height:1.5;max-height:72px;overflow-y:auto;}
+
+/* receive panel */
+.rx-list{display:flex;flex-direction:column;gap:3px;max-height:220px;overflow-y:auto;}
+.rx-row{display:flex;align-items:center;gap:7px;padding:5px 8px;border-radius:4px;background:white;border:1px solid var(--surface-deep);transition:border-color .15s;}
+.rx-row.on{border-color:rgba(58,90,122,.5);background:rgba(58,90,122,.05);}
+.rx-row input{accent-color:var(--rx);cursor:pointer;flex-shrink:0;}
+.rx-info{flex:1;min-width:0;}
+.rx-nm{font-family:'Crimson Pro',serif;font-size:13px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rx-proj{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);}
+.rx-order{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);background:var(--surface-deep);padding:1px 5px;border-radius:8px;flex-shrink:0;}
+.rx-bgs{display:flex;gap:3px;flex-shrink:0;}
+.rxb{font-size:8px;font-family:'JetBrains Mono',monospace;padding:1px 4px;border-radius:7px;}
+.rxb-s{background:rgba(74,103,65,.15);color:#4a8040;}
+.rxb-n{background:rgba(155,143,170,.15);color:var(--gold);}
+.rxb-p{background:rgba(58,90,122,.15);color:#3a70a0;}
+.rxb-none{background:var(--surface-deep);color:var(--muted);}
+.rx-order-hint{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--muted);padding:4px 0 2px;letter-spacing:.06em;}
+
+/* sys prompt panel */
+.sys-w label{display:block;font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:5px;}
+.sys-w textarea{width:100%;font-family:'Crimson Pro',serif;font-size:13px;color:var(--ink);background:var(--parchment);border:1px solid var(--surface-deep);border-radius:3px;padding:6px 10px;resize:none;outline:none;height:70px;line-height:1.5;}
+.sys-w textarea:focus{border-color:var(--gold);}
+
+/* ── VISIBLE CONTEXT PANEL (below topbar, above messages) ── */
+.ctx-panel{background:var(--surface-dark);border-bottom:1px solid var(--surface-deep);flex-shrink:0;overflow:hidden;transition:max-height .3s ease;max-height:0;}
+.ctx-panel.visible{max-height:320px;overflow-y:auto;}
+.ctx-panel-inner{padding:0 16px;}
+.ctx-panel-title{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#4a80a8;padding:8px 0 6px;display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none;}
+.ctx-panel-title:hover{color:#3a70a8;}
+.ctx-toggle-chev{margin-left:auto;font-size:9px;color:#4a80a8;transition:transform .2s;flex-shrink:0;}
+.ctx-toggle-chev.collapsed{transform:rotate(-90deg);}
+.ctx-sources-wrap{overflow:hidden;transition:max-height .25s ease;max-height:600px;padding-bottom:10px;}
+.ctx-sources-wrap.collapsed{max-height:0;padding-bottom:0;}
+/* sidebar collapse */
+aside{width:var(--sw);background:var(--ink-light);display:flex;flex-direction:column;flex-shrink:0;border-right:1px solid #252530;overflow:hidden;transition:width .25s ease;}
+aside.collapsed{width:0;border-right:none;}
+.btn-sb-toggle{background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:3px 5px;border-radius:3px;transition:color .15s,background .15s;line-height:1;flex-shrink:0;}
+.btn-sb-toggle:hover{color:var(--ghost-pale);background:rgba(255,255,255,.06);}
+.sb-collapse-tab{position:absolute;left:0;top:50%;transform:translateY(-50%);width:18px;height:48px;background:var(--ink-light);border:1px solid #252530;border-left:none;border-radius:0 4px 4px 0;display:none;align-items:center;justify-content:center;cursor:pointer;z-index:10;transition:background .15s;}
+.sb-collapse-tab:hover{background:#2a2a38;}
+.sb-collapse-tab span{font-size:10px;color:var(--muted);}
+.workspace{display:flex;flex:1;overflow:hidden;position:relative;}
+.ctx-dot{width:6px;height:6px;background:#4a80a8;border-radius:50%;animation:pdot 2s infinite;flex-shrink:0;}
+@keyframes pdot{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:1;transform:scale(1.3)}}
+.ctx-source{background:white;border:1px solid rgba(58,90,122,.2);border-radius:4px;margin-bottom:6px;overflow:hidden;}
+.ctx-source-hdr{display:flex;align-items:center;gap:6px;padding:5px 10px;background:rgba(58,90,122,.06);border-bottom:1px solid rgba(58,90,122,.1);cursor:pointer;user-select:none;}
+.ctx-source-ico{font-size:12px;}
+.ctx-source-nm{font-family:'Crimson Pro',serif;font-size:13px;color:var(--ink);flex:1;font-weight:500;}
+.ctx-source-tags{display:flex;gap:3px;}
+.ctx-tag{font-size:8px;font-family:'JetBrains Mono',monospace;padding:1px 5px;border-radius:8px;}
+.ctx-tag-s{background:rgba(74,103,65,.15);color:#4a8040;}
+.ctx-tag-n{background:rgba(155,143,170,.15);color:var(--gold);}
+.ctx-tag-p{background:rgba(58,90,122,.15);color:#3a70a0;}
+.ctx-expand{font-size:9px;color:var(--muted);}
+.ctx-source-body{padding:6px 10px 8px;display:none;}
+.ctx-source-body.open{display:block;}
+.ctx-block{font-family:'Crimson Pro',serif;font-size:13px;color:var(--ink-light);line-height:1.55;margin-bottom:5px;padding-bottom:5px;border-bottom:1px solid var(--surface-deep);}
+.ctx-block:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
+.ctx-block-lbl{font-family:'JetBrains Mono',monospace;font-size:8px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:2px;}
+.ctx-none{font-family:'Crimson Pro',serif;font-size:13px;color:var(--muted);font-style:italic;padding:8px 10px;}
+/* toggle pills inside ctx-source for enable/disable */
+.ctx-toggle{display:flex;align-items:center;gap:4px;margin-top:6px;}
+.ctx-toggle label{font-family:'JetBrains Mono',monospace;font-size:8px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);cursor:pointer;}
+.ctx-toggle input{accent-color:var(--rx);cursor:pointer;}
+
+/* ── MESSAGES ── */
+.msgs{flex:1;overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;gap:14px;}
+.msgs::-webkit-scrollbar{width:4px;}
+.msgs::-webkit-scrollbar-thumb{background:var(--surface-deep);border-radius:3px;}
+.empty-st{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--muted);text-align:center;padding:40px;}
+.empty-st .q{font-size:46px;margin-bottom:14px;opacity:.4;}
+.empty-st h2{font-family:'Playfair Display',serif;font-size:21px;font-style:italic;color:var(--ink-light);margin-bottom:7px;opacity:.6;}
+.empty-st p{font-size:15px;opacity:.5;max-width:300px;line-height:1.6;}
+.no-th-st{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px;color:var(--muted);text-align:center;}
+.no-th-st h2{font-family:'Playfair Display',serif;font-size:25px;font-style:italic;margin-bottom:10px;color:var(--ink-light);opacity:.5;}
+.no-th-st p{font-size:15px;opacity:.4;max-width:280px;line-height:1.6;}
+.msg{display:flex;gap:10px;animation:fup .25s ease;}
+@keyframes fup{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.msg.user{flex-direction:row-reverse;}
+.av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;margin-top:2px;}
+.msg.user .av{background:var(--ink);color:var(--ghost-pale);}
+.msg.assistant .av{background:var(--gold);color:var(--ink);}
+.mb{max-width:74%;display:flex;flex-direction:column;gap:3px;}
+.msg.user .mb{align-items:flex-end;}
+.bub{padding:9px 13px;border-radius:4px;font-size:15px;line-height:1.65;}
+.msg.user .bub{background:var(--ink);color:var(--parchment);border-radius:4px 4px 0 4px;}
+.msg.assistant .bub{background:white;color:var(--ink);border:1px solid var(--surface-deep);border-radius:4px 4px 4px 0;box-shadow:0 1px 4px rgba(0,0,0,.06);}
+.bub p{margin-bottom:7px;} .bub p:last-child{margin-bottom:0;}
+.mt{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--muted);opacity:.5;padding:0 2px;}
+.think-bub{background:white;border:1px solid var(--surface-deep);color:var(--muted);font-style:italic;display:flex;align-items:center;gap:7px;}
+.dots{display:flex;gap:3px;}
+.dots span{width:4px;height:4px;background:var(--gold);border-radius:50%;animation:db 1.2s infinite ease-in-out;}
+.dots span:nth-child(2){animation-delay:.2s}.dots span:nth-child(3){animation-delay:.4s}
+@keyframes db{0%,80%,100%{transform:scale(.6);opacity:.4}40%{transform:scale(1);opacity:1}}
+
+/* ── INPUT ── */
+.inp-area{padding:14px 18px;background:var(--surface-dark);border-top:1px solid var(--surface-deep);flex-shrink:0;}
+.inp-row{display:flex;gap:9px;align-items:flex-end;}
+.inp-wrap{flex:1;background:white;border:1px solid var(--surface-deep);border-radius:4px;transition:border-color .15s;overflow:hidden;}
+.inp-wrap:focus-within{border-color:var(--gold);}
+#msg-input{width:100%;font-family:'Crimson Pro',serif;font-size:15px;color:var(--ink);background:transparent;border:none;outline:none;padding:9px 12px;resize:none;min-height:42px;max-height:150px;line-height:1.5;}
+.inp-foot{display:flex;justify-content:space-between;align-items:center;padding:3px 9px 5px;border-top:1px solid var(--surface-deep);}
+.inp-hint{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--muted);opacity:.5;text-transform:uppercase;letter-spacing:.06em;}
+.m-badge{font-family:'JetBrains Mono',monospace;font-size:8px;background:rgba(155,143,170,.1);color:var(--gold);padding:2px 5px;border-radius:7px;text-transform:uppercase;}
+.btn-send{background:var(--ink);border:none;color:var(--ghost-pale);width:42px;height:42px;border-radius:4px;cursor:pointer;font-size:17px;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;}
+.btn-send:hover{background:var(--ink-light);transform:translateY(-1px);}
+.btn-send:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+
+/* ── FLOW MAP VIEW ── */
+#view-flow{background:var(--parchment);}
+.flow-header{padding:14px 20px 10px;border-bottom:1px solid var(--surface-deep);flex-shrink:0;display:flex;align-items:center;gap:10px;}
+.flow-header h2{font-family:'Playfair Display',serif;font-size:18px;font-style:italic;color:var(--ink);flex:1;}
+.flow-proj-sel{font-family:'JetBrains Mono',monospace;font-size:11px;background:white;border:1px solid var(--surface-deep);color:var(--ink);padding:4px 8px;border-radius:3px;outline:none;}
+.flow-proj-sel:focus{border-color:var(--gold);}
+.flow-hint{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;}
+.flow-canvas-wrap{flex:1;overflow:auto;position:relative;padding:30px;}
+#flow-canvas{position:relative;min-width:100%;min-height:100%;}
+
+/* node card */
+.fn{position:absolute;width:240px;background:white;border:1.5px solid var(--surface-deep);border-radius:6px;box-shadow:0 2px 10px rgba(0,0,0,.07);cursor:pointer;transition:box-shadow .2s,border-color .2s;user-select:none;}
+.fn:hover{box-shadow:0 4px 18px rgba(0,0,0,.12);}
+.fn.fn-active{border-color:var(--gold);box-shadow:0 0 0 2px rgba(155,143,170,.2);}
+.fn-head{padding:8px 10px 7px;border-bottom:1px solid var(--surface-deep);display:flex;align-items:center;gap:7px;}
+.fn-order{font-family:'JetBrains Mono',monospace;font-size:9px;color:white;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:700;transition:background .3s;}
+.fn-ico{font-size:14px;}
+.fn-nm{font-family:'Playfair Display',serif;font-size:13px;color:var(--ink);flex:1;line-height:1.2;}
+.fn-body{padding:7px 10px 8px;}
+.fn-type{font-family:'JetBrains Mono',monospace;font-size:8px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:4px;}
+.fn-tags{display:flex;flex-wrap:wrap;gap:3px;margin-top:4px;}
+.fn-tag{font-size:8px;font-family:'JetBrains Mono',monospace;padding:1px 5px;border-radius:8px;}
+.fn-tag-bc{background:rgba(74,103,65,.15);color:#4a8040;}
+.fn-tag-rx{background:rgba(58,90,122,.15);color:#3a70a0;}
+.fn-msgs{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--muted);}
+.fn-open{font-family:'Crimson Pro',serif;font-size:11px;color:var(--gold);margin-top:6px;border:1px solid rgba(155,143,170,.3);background:rgba(155,143,170,.06);padding:2px 8px;border-radius:3px;cursor:pointer;width:100%;text-align:center;transition:all .15s;}
+.fn-open:hover{background:rgba(155,143,170,.15);}
+
+/* interactive sections inside flow node */
+.fn-sections-wrap{overflow:hidden;transition:max-height .25s ease;max-height:0;padding:0 12px;}
+.fn-sections-wrap.open{max-height:400px;overflow-y:auto;padding:0 12px 10px;}
+.fn-section{border-top:1px solid var(--surface-deep);padding:10px 0 4px;}
+.fn-section-title{font-family:'JetBrains Mono',monospace;font-size:8px;text-transform:uppercase;letter-spacing:.1em;margin-bottom:7px;display:flex;align-items:center;gap:4px;}
+.fn-section-title.green{color:#5a9050;} .fn-section-title.blue{color:#4a80a8;}
+.fn-bc-pills{display:flex;gap:4px;flex-wrap:wrap;}
+.fn-pill{font-family:'JetBrains Mono',monospace;font-size:8px;padding:2px 7px;border-radius:12px;border:1px solid var(--surface-deep);background:white;color:var(--muted);cursor:pointer;transition:all .15s;user-select:none;}
+.fn-pill:hover{border-color:var(--bc);color:#4a8040;}
+.fn-pill.on-bc{background:rgba(74,103,65,.15);border-color:var(--bc);color:#4a8040;}
+.fn-pill.on-rx{background:rgba(58,90,122,.15);border-color:var(--rx);color:#3a70a0;}
+.fn-rx-list{display:flex;flex-direction:column;gap:4px;max-height:120px;overflow-y:auto;}
+.fn-rx-row{display:flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink);padding:1px 0;}
+.fn-rx-row input{accent-color:var(--rx);cursor:pointer;flex-shrink:0;}
+.fn-rx-row label{cursor:pointer;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+/* expand/collapse chevron on card */
+.fn-toggle{font-size:9px;color:var(--muted);cursor:pointer;padding:2px 4px;border-radius:2px;background:none;border:none;transition:color .15s;}
+.fn-toggle:hover{color:var(--ghost);}
+.fn-sections-wrap{overflow:hidden;transition:max-height .25s ease;max-height:0;}
+.fn-sections-wrap.open{max-height:400px;overflow-y:auto;}
+/* canvas drag cursor */
+.fn{cursor:default;}
+.fn.fn-dragging{opacity:.75;box-shadow:0 8px 32px rgba(0,0,0,.18);z-index:100;}
+.fn-drag-handle{display:flex;align-items:center;gap:4px;cursor:grab;padding:2px 4px 0;color:var(--muted);font-size:10px;}
+.fn-drag-handle:active{cursor:grabbing;}
+/* SVG arrows overlay */
+#flow-svg{position:absolute;top:0;left:0;pointer-events:none;overflow:visible;}
+
+.flow-legend{display:flex;gap:16px;padding:8px 20px;border-top:1px solid var(--surface-deep);flex-shrink:0;background:var(--surface-dark);}
+.fl-item{display:flex;align-items:center;gap:5px;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;}
+.fl-line{width:24px;height:2px;border-radius:1px;}
+.fl-line-ctx{background:var(--rx);}
+.fl-dot{width:8px;height:8px;border-radius:50%;}
+.fl-dot-bc{background:var(--bc);}
+.fl-dot-plain{background:var(--muted);}
+
+/* ── MODALS ── */
+.modal-ov{position:fixed;inset:0;background:rgba(10,8,5,.7);display:flex;align-items:center;justify-content:center;z-index:100;animation:fi .15s ease;}
+@keyframes fi{from{opacity:0}to{opacity:1}}
+.modal{background:var(--surface);border:1px solid var(--surface-deep);border-radius:6px;padding:26px 30px;width:430px;box-shadow:0 20px 60px rgba(0,0,0,.4);animation:su .2s ease;}
+@keyframes su{from{transform:translateY(16px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal h2{font-family:'Playfair Display',serif;font-size:19px;margin-bottom:18px;color:var(--ink);}
+.fg{margin-bottom:14px;}
+.fg label{display:block;font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:5px;}
+.fg input,.fg textarea,.fg select{width:100%;font-family:'Crimson Pro',serif;font-size:15px;color:var(--ink);background:white;border:1px solid var(--surface-deep);border-radius:3px;padding:7px 11px;outline:none;transition:border-color .15s;}
+.fg input:focus,.fg textarea:focus,.fg select:focus{border-color:var(--gold);}
+.fg textarea{resize:vertical;min-height:76px;}
+.icon-row{display:flex;flex-wrap:wrap;gap:7px;margin-top:5px;}
+.icon-opt{font-size:19px;padding:5px 7px;border-radius:4px;cursor:pointer;border:2px solid transparent;transition:border-color .1s;background:white;}
+.icon-opt:hover{border-color:var(--ghost-pale);}
+.icon-opt.sel{border-color:var(--gold);background:rgba(155,143,170,.08);}
+.color-row{display:flex;flex-wrap:wrap;gap:7px;margin-top:5px;}
+.color-opt{width:20px;height:20px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all .1s;}
+.color-opt:hover{transform:scale(1.15);}
+.color-opt.sel{border-color:var(--ink);transform:scale(1.15);}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:20px;}
+.btn-cancel{background:none;border:1px solid var(--surface-deep);color:var(--muted);font-family:'Crimson Pro',serif;font-size:14px;padding:7px 16px;border-radius:3px;cursor:pointer;}
+.btn-cancel:hover{border-color:var(--muted);}
+.btn-confirm{background:var(--ink);border:none;color:var(--ghost-pale);font-family:'Crimson Pro',serif;font-size:14px;font-weight:600;padding:7px 20px;border-radius:3px;cursor:pointer;}
+.btn-confirm:hover{background:var(--ink-light);}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>g<span>Host</span>Writer</h1>
+  <div class="nav-tabs">
+    <button class="nav-tab active" id="tab-chat" onclick="switchView('chat')">✍ Write</button>
+    <button class="nav-tab" id="tab-flow" onclick="switchView('flow')">🔀 Flow Map</button>
+    <button class="nav-tab" id="tab-crit" onclick="switchView('critique')">🧐 Critique</button>
+  </div>
+  <!-- Drive sync bar -->
+  <div class="sync-bar">
+    <div class="sync-indicator">
+      <div class="sync-dot idle" id="sync-dot"></div>
+      <span class="sync-status-txt" id="sync-status-txt">Local only</span>
+    </div>
+    <button class="sync-btn" id="sync-btn" onclick="driveSignIn()">☁ Connect Drive</button>
+  </div>
+  <button class="settings-gear" id="settings-gear" onclick="toggleSettings()" title="API Settings">⚙</button>
+</header>
+
+<!-- Settings panel (slides down from header) -->
+<div id="settings-panel" class="settings-panel">
+  <div class="settings-inner">
+    <span class="settings-label">Provider</span>
+    <select id="provider-sel" onchange="onProviderChange()">
+      <option value="anthropic">Claude (Anthropic)</option>
+      <option value="openai">GPT (OpenAI)</option>
+      <option value="custom">Custom / Local</option>
+    </select>
+    <span class="settings-label">Model</span>
+    <select id="model-sel"></select>
+    <span class="settings-label">API Key</span>
+    <input type="password" id="api-key" placeholder="sk-ant-…"/>
+    <button class="key-eye" onclick="toggleKey()">👁</button>
+    <button class="settings-close" onclick="toggleSettings()">✕ Close</button>
+  </div>
+</div>
+
+<!-- Google Drive connect overlay (shown on first load if not connected) -->
+<div class="drive-overlay" id="drive-overlay" style="display:none;">
+  <div class="drive-card">
+    <div class="drive-ico">☁</div>
+    <h2>Sync with Google Drive</h2>
+    <p>Connect your Google Drive to automatically save and sync your writing across every device and browser session. Your data is stored in a single file in your own Drive — gHostWriter never sees it.</p>
+    <button class="btn-drive-connect" onclick="driveSignIn()">Connect Google Drive</button><br>
+    <button class="btn-drive-skip" onclick="dismissDriveOverlay()">Not now — use local storage only</button>
+    <div class="drive-note">You can connect anytime using the ☁ button in the header</div>
+  </div>
+</div>
+
+<div class="workspace">
+  <aside id="sidebar">
+    <div class="sb-head">
+      <span>Projects</span>
+      <button class="btn-sb-toggle" onclick="toggleSidebar()" title="Collapse sidebar" id="btn-sb-toggle">◀</button>
+    </div>
+    <div class="sb-hint">Drag ⠿ to reorder threads</div>
+    <div class="proj-list" id="proj-list"></div>
+    <div class="sb-footer">
+      <button class="btn-new-proj" onclick="openNewProj()">+ New Project</button>
+    </div>
+  </aside>
+  <div class="sb-collapse-tab" id="sb-tab" onclick="toggleSidebar()" title="Expand sidebar">
+    <span>▶</span>
+  </div>
+
+  <main>
+    <!-- CHAT VIEW -->
+    <div id="view-chat">
+      <div id="no-th-st" class="no-th-st">
+        <h2>Your story begins here</h2>
+        <p>Select or create a project, then open a thread to start writing with your AI collaborator.</p>
+      </div>
+
+      <div id="thread-view" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
+        <!-- Topbar -->
+        <div class="topbar" id="topbar">
+          <div class="topbar-r1">
+            <span class="tb-ico" id="tb-ico">📖</span>
+            <div class="tb-info">
+              <div class="tb-nm" id="tb-nm">—</div>
+              <div class="tb-path" id="tb-path">—</div>
+            </div>
+            <div class="tb-acts">
+              <button class="ba ba-import" onclick="openImportPanel()">📂 Import</button>
+              <button class="ba ba-bc" id="btn-bc" onclick="togglePanel('bc')">📡 Broadcast</button>
+              <button class="ba ba-rx" id="btn-rx" onclick="togglePanel('rx')">📥 Receives</button>
+              <button class="ba" id="btn-sys" onclick="togglePanel('sys')">System Prompt</button>
+              <button class="ba" onclick="clearThread()">Clear</button>
+              <button class="ba danger" onclick="delThread()">Delete</button>
+            </div>
+          </div>
+
+          <!-- Broadcast panel -->
+          <div class="cpanel" id="panel-bc">
+            <div class="cpi cpi-green">
+              <div class="pt pt-g">📡 Broadcast from this thread — toggle what other threads can see</div>
+              <div class="bc-toggles">
+                <label class="tpill g"><input type="checkbox" id="bc-sys" onchange="saveBc()"><span class="tpill-lbl">System Prompt</span></label>
+                <label class="tpill g"><input type="checkbox" id="bc-notes" onchange="saveBc()"><span class="tpill-lbl">Pinned Notes</span></label>
+                <label class="tpill g"><input type="checkbox" id="bc-sum" onchange="saveBc()"><span class="tpill-lbl">AI Summary</span></label>
+              </div>
+              <div class="bc-notes-w">
+                <label>Pinned Notes — key facts, canon, decisions for other threads to know</label>
+                <textarea id="bc-notes-txt" placeholder="e.g. Protagonist: Sera Voss, 24, shadow-weaver. Born in Velmoor. Her magic is illegal under the Conclave's edicts…" oninput="saveBc()"></textarea>
+              </div>
+              <div style="display:flex;align-items:center;margin-top:7px;">
+                <button class="btn-gen" id="btn-gen-sum" onclick="genSummary()">✦ Generate AI Summary from conversation</button>
+                <span class="gen-st" id="gen-st"></span>
+              </div>
+              <div id="sum-preview" style="display:none" class="sum-preview">
+                <div class="sum-plbl">Current Summary</div>
+                <div class="sum-ptxt" id="sum-txt"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Receive panel -->
+          <div class="cpanel" id="panel-rx">
+            <div class="cpi cpi-blue">
+              <div class="pt pt-b">📥 Receive context from other threads — check to subscribe</div>
+              <div class="rx-order-hint">Threads are shown in order (earlier = lower number). Earlier threads flow naturally to later ones.</div>
+              <div style="height:6px;"></div>
+              <div class="rx-list" id="rx-list"></div>
+              <div id="rx-empty" style="font-family:'Crimson Pro',serif;font-size:13px;color:var(--muted);font-style:italic;display:none;padding:4px 0;">No other threads available yet.</div>
+            </div>
+          </div>
+
+          <!-- System prompt panel -->
+          <div class="cpanel" id="panel-sys">
+            <div class="cpi cpi-plain">
+              <div class="sys-w">
+                <label>System Prompt — this thread's AI focus (also broadcastable to other threads)</label>
+                <textarea id="sys-inp" placeholder="e.g. You are helping develop the world and lore for a fantasy series. Stay focused exclusively on this thread's topic." oninput="saveSys()"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Import panel -->
+          <div class="cpanel" id="panel-import">
+            <div class="cpi cpi-plain" style="background:rgba(58,90,122,.03);">
+              <div class="pt" style="color:#4a80a8;">📂 Import writing into this thread</div>
+              <div class="import-mode-row">
+                <span class="import-mode-pill sel" data-mode="message" onclick="selImportMode(this)">As message</span>
+                <span class="import-mode-pill" data-mode="context" onclick="selImportMode(this)">As pinned note</span>
+              </div>
+              <div class="import-drop-zone" id="thread-drop-zone"
+                onclick="document.getElementById('thread-file-inp').click()"
+                ondragover="dzDragOver(event,'thread-drop-zone')"
+                ondragleave="dzDragLeave('thread-drop-zone')"
+                ondrop="dzDrop(event,'thread')">
+                <div class="idz-ico">📄</div>
+                <p>Click to browse or drag &amp; drop a file</p>
+                <div class="idz-types">.txt · .md · .docx · .doc · .rtf</div>
+              </div>
+              <input type="file" id="thread-file-inp" accept=".txt,.md,.docx,.doc,.rtf,text/plain,text/markdown" style="display:none" onchange="handleThreadFileSelect(event)">
+              <div class="import-preview" id="thread-import-preview">
+                <div class="import-preview-name">
+                  <span id="thread-import-fname">—</span>
+                  <button onclick="clearThreadImport()" title="Remove">✕</button>
+                </div>
+                <div class="import-preview-text" id="thread-import-preview-text"></div>
+              </div>
+              <button class="btn-gen" style="width:100%;margin-top:2px;border-color:rgba(58,90,122,.4);color:#4a80a8;" id="btn-do-import" onclick="doThreadImport()" disabled>↓ Insert into thread</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Visible Context Panel -->
+        <div class="ctx-panel" id="ctx-panel">
+          <div class="ctx-panel-inner">
+            <div class="ctx-panel-title" onclick="toggleCtxCollapse()" id="ctx-panel-title">
+              <span class="ctx-dot"></span>
+              <span id="ctx-panel-label">Context loaded into this conversation</span>
+              <span class="ctx-toggle-chev" id="ctx-chev">▼</span>
+            </div>
+            <div class="ctx-sources-wrap" id="ctx-sources-wrap">
+              <div id="ctx-sources"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Freeform mode notice bar -->
+        <div class="freeform-bar" id="freeform-bar" style="display:none;">
+          <span>✏ Freeform Mode</span><span>— AI is reading but won't reply until you hit ➤ Send or switch back to Chat mode</span>
+        </div>
+
+        <!-- Messages -->
+        <div class="msgs" id="msgs">
+          <div class="empty-st" id="empty-st">
+            <div class="q">🪶</div>
+            <h2>A blank page awaits</h2>
+            <p>Begin your conversation. Context from other threads appears above before you send.</p>
+          </div>
+        </div>
+
+        <!-- Input -->
+        <div class="inp-area">
+          <div class="inp-row">
+            <div class="inp-wrap">
+              <textarea id="msg-input" placeholder="Write your message…" rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+              <div class="inp-foot">
+                <div class="mode-toggle">
+                  <button class="mode-btn active" id="mode-chat" onclick="setMode('chat')" title="AI replies to each message">💬 Chat</button>
+                  <button class="mode-btn" id="mode-free" onclick="setMode('freeform')" title="Write freely — AI reads but doesn't reply">✏ Freeform</button>
+                </div>
+                <span class="m-badge" id="m-badge">—</span>
+              </div>
+            </div>
+            <button class="btn-send" id="btn-send" onclick="sendMsg()" title="Send message (AI will reply in Chat mode)">➤</button>
+          </div>
+        </div>
+
+        <!-- Character Profile View (shown instead of msgs+input for character sub-threads) -->
+        <div id="char-view">
+          <!-- Profile collapse toggle -->
+          <button class="prof-collapse-btn" id="prof-collapse-btn" onclick="toggleProfilePanel()" title="Collapse/expand profile">◀</button>
+          <!-- Profile sheet -->
+          <div class="char-profile" id="char-profile-panel">
+            <div class="char-profile-header">
+              <div class="char-avatar-wrap">
+                <div class="char-avatar" id="char-avatar" onclick="triggerAvatarUpload()" title="Click to upload portrait">
+                  <span id="char-avatar-emoji">👤</span>
+                  <img id="char-avatar-img" src="" style="display:none;">
+                  <div class="char-avatar-overlay">📷</div>
+                </div>
+                <button class="btn-char-img" id="btn-remove-img" onclick="removeCharImg()" style="display:none;">✕ Remove</button>
+                <input type="file" id="char-img-file" accept="image/*" style="display:none;" onchange="loadCharImg(event)">
+              </div>
+              <div style="flex:1;min-width:0;">
+                <div class="char-profile-name" id="char-profile-name">—</div>
+                <div class="char-profile-proj" id="char-profile-proj">—</div>
+              </div>
+            </div>
+            <div class="char-profile-body" id="char-profile-body">
+              <div class="char-field"><div class="char-field-label">Full Name</div><input type="text" id="cp-name" placeholder="Sera Voss" oninput="saveCharProfile()"></div>
+              <div class="char-field"><div class="char-field-label">Role</div>
+                <div class="role-wrap">
+                  <select id="cp-role" onchange="onRoleChange()">
+                    <option value="">— Select —</option>
+                    <option>Protagonist</option><option>Antagonist</option><option>Deuteragonist</option>
+                    <option>Supporting</option><option>Mentor</option><option>Love Interest</option>
+                    <option>Comic Relief</option><option>Foil</option><option>Minor</option>
+                    <option value="__custom__">✏ Custom role…</option>
+                  </select>
+                  <div class="role-custom-row" id="role-custom-row">
+                    <input class="role-custom-inp" type="text" id="cp-role-custom" placeholder="e.g. Herald, Trickster, Wanderer…" oninput="saveCharProfile()">
+                  </div>
+                </div>
+              </div>
+              <div class="char-field"><div class="char-field-label">Age / Era</div><input type="text" id="cp-age" placeholder="24, born Year 312 of the Conclave" oninput="saveCharProfile()"></div>
+              <div class="char-field"><div class="char-field-label">Appearance</div><textarea id="cp-appearance" placeholder="Silver hair, grey eyes, lean…" oninput="saveCharProfile()"></textarea></div>
+              <div class="char-field">
+                <div class="char-field-label">Traits <span style="font-weight:400;text-transform:none;letter-spacing:0;font-family:'Crimson Pro',serif;font-size:10px;color:var(--muted);">type + Enter to add</span></div>
+                <div class="char-trait-pills" id="cp-traits-wrap" onclick="focusTraitInput()">
+                  <input class="trait-input" id="cp-trait-input" placeholder="e.g. stubborn" onkeydown="traitKey(event)">
+                </div>
+              </div>
+              <div class="char-field"><div class="char-field-label">Motivation</div><textarea id="cp-motivation" placeholder="What does this character want most?" oninput="saveCharProfile()"></textarea></div>
+              <div class="char-field"><div class="char-field-label">Arc</div><textarea id="cp-arc" placeholder="Where do they start, how do they change?" oninput="saveCharProfile()" class="tall"></textarea></div>
+              <div class="char-field"><div class="char-field-label">Backstory (brief)</div><textarea id="cp-backstory" placeholder="Key history the reader needs to understand them…" oninput="saveCharProfile()" class="tall"></textarea></div>
+              <div class="char-field"><div class="char-field-label">Relationships</div><textarea id="cp-relationships" placeholder="Key relationships with other characters…" oninput="saveCharProfile()"></textarea></div>
+              <div class="char-field"><div class="char-field-label">Notes</div><textarea id="cp-notes" placeholder="Anything else — quirks, symbols, recurring motifs…" oninput="saveCharProfile()" class="tall"></textarea></div>
+            </div>
+            <div class="char-profile-footer">
+              <button class="btn-gen-profile" id="btn-gen-profile" onclick="genCharProfile()">✦ Auto-fill profile from conversation</button>
+              <div class="char-bc-row">
+                <input type="checkbox" id="char-bc-profile" onchange="saveCharBc()">
+                <label for="char-bc-profile">Broadcast this profile sheet to other threads</label>
+              </div>
+            </div>
+          </div>
+          <!-- Character chat -->
+          <div class="char-chat">
+            <!-- reuse freeform bar + msgs + input but scoped here via JS -->
+            <div class="msgs" id="char-msgs">
+              <div class="empty-st" id="char-empty-st" style="display:flex;">
+                <div class="q">🪶</div>
+                <h2>Develop this character</h2>
+                <p>Chat with the AI about this character. Use "Auto-fill profile" to extract key details into the sheet.</p>
+              </div>
+            </div>
+            <div class="inp-area">
+              <div class="inp-row">
+                <div class="inp-wrap">
+                  <textarea id="char-msg-input" placeholder="Ask about this character…" rows="1" onkeydown="handleCharKey(event)" oninput="autoResize(this)"></textarea>
+                  <div class="inp-foot">
+                    <div class="mode-toggle">
+                      <button class="mode-btn active" id="char-mode-chat" onclick="setCharMode('chat')">💬 Chat</button>
+                      <button class="mode-btn" id="char-mode-free" onclick="setCharMode('freeform')">✏ Freeform</button>
+                    </div>
+                    <span class="m-badge" id="char-m-badge">—</span>
+                  </div>
+                </div>
+                <button class="btn-send" id="char-btn-send" onclick="sendCharMsg()">➤</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHARACTER ROSTER VIEW -->
+    <div id="char-roster-view">
+      <div class="roster-topbar">
+        <h2 id="roster-title">Characters</h2>
+        <div class="roster-controls">
+          <select class="roster-sort-sel" id="roster-sort" onchange="rerenderRoster()">
+            <option value="default">Default order</option>
+            <option value="pinned">Pinned first</option>
+            <option value="name">Name A–Z</option>
+            <option value="role">By role</option>
+            <option value="msgs">Most active</option>
+          </select>
+        </div>
+      </div>
+      <div class="roster-grid" id="roster-grid"></div>
+      <div class="roster-footer">
+        <button class="btn-add-char-main" id="btn-roster-add">＋ Add Character</button>
+      </div>
+    </div>
+
+    <!-- FLOW MAP VIEW -->
+    <div id="view-flow">
+      <div class="flow-header">
+        <h2>Context Flow Map</h2>
+        <select class="flow-proj-sel" id="flow-proj-sel" onchange="renderFlowMap()"></select>
+        <span class="flow-hint">Arrows show context flow between threads</span>
+      </div>
+      <div class="flow-canvas-wrap" id="flow-canvas-wrap">
+        <svg id="flow-svg" width="0" height="0"><defs><marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="rgba(58,90,122,0.6)"/></marker></defs></svg>
+        <div id="flow-canvas"></div>
+      </div>
+      <div class="flow-legend">
+        <div class="fl-item"><div class="fl-line fl-line-ctx"></div> Context flows this direction</div>
+        <div class="fl-item"><div class="fl-dot fl-dot-bc"></div> Broadcasting thread</div>
+        <div class="fl-item"><div class="fl-dot fl-dot-plain"></div> Receiving thread</div>
+      </div>
+    </div>
+    <!-- CRITIQUE VIEW -->
+    <div id="view-critique" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
+      <div class="crit-header">
+        <h2>Critique Studio</h2>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;">Select scope &amp; focus, then run</span>
+      </div>
+      <div class="crit-body">
+        <!-- Left config panel -->
+        <div class="crit-config">
+          <div>
+            <div class="crit-config-title">Scope — what to critique</div>
+            <div style="height:8px;"></div>
+            <div class="crit-scope-grid" id="crit-scope-grid"></div>
+            <div class="char-picker-wrap" id="char-picker-wrap">
+              <div class="char-picker-header">
+                <input type="checkbox" id="cp-all" checked onchange="critCharToggleAll(this)">
+                <label for="cp-all">All Characters</label>
+              </div>
+              <div class="char-picker-list" id="char-picker-list"></div>
+            </div>
+          </div>
+          <div>
+            <div class="crit-config-title">Focus — what aspects</div>
+            <div style="height:6px;"></div>
+            <div class="crit-focus-checks" id="crit-focus-checks">
+              <label class="crit-check"><input type="checkbox" value="plot" checked><span>Plot &amp; Structure</span></label>
+              <label class="crit-check"><input type="checkbox" value="characters" checked><span>Characters &amp; Voice</span></label>
+              <label class="crit-check"><input type="checkbox" value="worldbuilding"><span>World Building</span></label>
+              <label class="crit-check"><input type="checkbox" value="pacing" checked><span>Pacing &amp; Flow</span></label>
+              <label class="crit-check"><input type="checkbox" value="prose"><span>Prose &amp; Style</span></label>
+              <label class="crit-check"><input type="checkbox" value="consistency"><span>Internal Consistency</span></label>
+              <label class="crit-check"><input type="checkbox" value="themes"><span>Themes &amp; Subtext</span></label>
+              <label class="crit-check"><input type="checkbox" value="marketability"><span>Marketability / Hooks</span></label>
+            </div>
+          </div>
+          <div>
+            <div class="crit-config-title">Tone</div>
+            <div style="height:6px;"></div>
+            <div class="crit-tone-row" id="crit-tone-row">
+              <span class="crit-tone-pill sel" data-tone="balanced" onclick="selTone(this)">Balanced</span>
+              <span class="crit-tone-pill" data-tone="encouraging" onclick="selTone(this)">Encouraging</span>
+              <span class="crit-tone-pill" data-tone="rigorous" onclick="selTone(this)">Rigorous</span>
+              <span class="crit-tone-pill" data-tone="reader" onclick="selTone(this)">Reader POV</span>
+              <span class="crit-tone-pill" data-tone="editor" onclick="selTone(this)">Copy Editor</span>
+              <span class="crit-tone-pill" data-tone="sales" onclick="selTone(this)">Sales</span>
+            </div>
+          </div>
+          <div>
+            <div class="crit-config-title">Additional instructions (optional)</div>
+            <div style="height:5px;"></div>
+            <textarea class="crit-extra" id="crit-extra" placeholder="e.g. Pay special attention to whether the magic system feels internally consistent…"></textarea>
+          </div>
+          <button class="btn-run-crit" id="btn-run-crit" onclick="runCritique()">✦ Run Critique</button>
+        </div>
+        <!-- Right output panel -->
+        <div class="crit-output-wrap">
+          <div class="crit-output-header">
+            <span id="crit-output-label">Output</span>
+            <button class="btn-copy-crit" onclick="copyCritique()">Copy</button>
+          </div>
+          <div class="crit-output" id="crit-output">
+            <div class="crit-placeholder">
+              <div class="cp-ico" id="cp-ico">🧐</div>
+              <h3>Ready when you are</h3>
+              <p>Choose a scope and focus on the left, then run the critique.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- New Character Modal -->
+<div id="char-modal" class="modal-ov" style="display:none">
+  <div class="modal">
+    <h2>New Character</h2>
+    <div class="fg"><label>Character Name</label><input type="text" id="char-nm-inp" placeholder="e.g. Sera Voss"/></div>
+    <div class="fg">
+      <label>Avatar Emoji</label>
+      <div class="icon-row" id="char-icon-row"></div>
+    </div>
+    <div class="fg"><label>Initial System Prompt (optional)</label><textarea id="char-sys-inp" placeholder="e.g. Help develop Sera as a morally complex protagonist struggling with forbidden power…"></textarea></div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal('char-modal')">Cancel</button>
+      <button class="btn-confirm" onclick="createCharacter()">Create Character</button>
+    </div>
+  </div>
+</div>
+<div id="del-proj-modal" class="modal-ov" style="display:none">
+  <div class="modal confirm-modal">
+    <h2>Delete Project?</h2>
+    <p id="del-proj-msg">This will permanently delete this project and all its threads and messages.</p>
+    <span class="warn">This cannot be undone.</span>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal('del-proj-modal')">Cancel — Keep It</button>
+      <button class="btn-confirm-del" id="btn-confirm-del" onclick="confirmDelProj()">Yes, Delete Forever</button>
+    </div>
+  </div>
+</div>
+
+<!-- New Project Modal -->
+<div id="proj-modal" class="modal-ov" style="display:none">
+  <div class="modal">
+    <h2>New Project</h2>
+    <div class="fg"><label>Project Name</label><input type="text" id="proj-nm-inp" placeholder="e.g. The Shattered Crown Series"/></div>
+    <div class="fg"><label>Icon</label><div class="icon-row" id="icon-row"></div></div>
+    <div class="fg"><label>Color</label><div class="color-row" id="color-row"></div></div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal('proj-modal')">Cancel</button>
+      <button class="btn-confirm" onclick="createProj()">Create</button>
+    </div>
+  </div>
+</div>
+
+<!-- New Thread Modal -->
+<div id="th-modal" class="modal-ov" style="display:none">
+  <div class="modal" style="width:480px;">
+    <h2>New Thread</h2>
+    <div class="fg"><label>Thread Name</label><input type="text" id="th-nm-inp" placeholder="e.g. Chapter 3 — The Betrayal"/></div>
+    <div class="fg">
+      <label>Type</label>
+      <select id="th-type">
+        <option value="overview">📋 Overview / Series Bible</option>
+        <option value="characters">👥 Characters</option>
+        <option value="worldbuilding">🌍 World Building / Lore</option>
+        <option value="plot">📜 Plot / Outline</option>
+        <option value="chapter">📖 Chapter / Scene</option>
+        <option value="research">🔍 Research</option>
+        <option value="ideas">💡 Ideas / Brainstorm</option>
+        <option value="custom">✏️ Custom</option>
+      </select>
+    </div>
+    <div class="fg"><label>System Prompt (optional)</label><textarea id="th-sys-inp" placeholder="Set the AI's focus for this thread…"></textarea></div>
+    <div class="fg">
+      <label>Import Writing (optional)</label>
+      <div class="import-drop-zone" id="modal-drop-zone" style="margin-bottom:6px;"
+        onclick="document.getElementById('modal-file-inp').click()"
+        ondragover="dzDragOver(event,'modal-drop-zone')"
+        ondragleave="dzDragLeave('modal-drop-zone')"
+        ondrop="dzDrop(event,'modal')">
+        <div class="idz-ico">📄</div>
+        <p>Click to browse or drag &amp; drop a file to import on creation</p>
+        <div class="idz-types">.txt · .md · .docx · .doc · .rtf</div>
+      </div>
+      <input type="file" id="modal-file-inp" accept=".txt,.md,.docx,.doc,.rtf,text/plain,text/markdown" style="display:none" onchange="handleModalFileSelect(event)">
+      <div class="import-preview" id="modal-import-preview">
+        <div class="import-preview-name">
+          <span id="modal-import-fname">—</span>
+          <button onclick="clearModalImport()" title="Remove">✕</button>
+        </div>
+        <div class="import-preview-text" id="modal-import-preview-text"></div>
+      </div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal('th-modal')">Cancel</button>
+      <button class="btn-confirm" onclick="createThread()">Create</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────────────────────────────────────
+const S = {
+  projects:[], activeProj:null, activeTh:null,
+  generating:false, curView:'chat',
+  newProjIcon:'📚', newProjColor:'#b8860b', pendingProj:null, openPanel:null,
+  dragSrc:null, inputMode:'chat', pendingDelProj:null,
+  charInputMode:'chat', charGenerating:false,
+  pendingCharParent:null, newCharIcon:'👤'
+};
+const ICONS=['📚','📖','✍️','🗡️','🌍','🏰','🐉','🌙','⚔️','🔮','🎭','🪄','🗺️','💀','👑','🌊','🔥','🌲','🌟','💎'];
+const COLORS=['#b8860b','#4a6741','#8b3a0f','#3a5a7a','#6a3a7a','#2a5a5a','#7a3a4a','#5a5a2a','#3a3a7a','#6a4a2a'];
+const TICO={overview:'📋',characters:'👥',worldbuilding:'🌍',plot:'📜',chapter:'📖',research:'🔍',ideas:'💡',custom:'✏️'};
+const TYPE_LABELS={overview:'Overview',characters:'Characters',worldbuilding:'World Building',plot:'Plot / Outline',chapter:'Chapter / Scene',research:'Research',ideas:'Ideas',custom:'Custom'};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PERSISTENCE
+// ─────────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// PERSISTENCE — localStorage + Google Drive auto-sync
+// ─────────────────────────────────────────────────────────────────────────────
+const CLIENT_ID = '950262035569-2tkpuc51dr6ita2o02siig2mb8ga0o0i.apps.googleusercontent.com';
+const SCOPES    = 'https://www.googleapis.com/auth/drive.file';
+const FILE_NAME = 'scriptorium-data.json';
+const LS_KEY    = 'scriptorium_v3';
+const LS_DRIVE  = 'scriptorium_drive'; // stores {token, fileId}
+
+let driveState = { token:null, fileId:null, connected:false };
+let saveTimer   = null;   // debounce handle
+let saveVersion = 0;      // incremented on each change, checked after debounce
+
+// ── Local save (always runs) ──────────────────────────────────────────────
+function saveLocal(){
+  try{ localStorage.setItem(LS_KEY, JSON.stringify(S.projects)); } catch(e){}
+}
+
+// ── Load from localStorage ────────────────────────────────────────────────
+function load(){
+  try{
+    const d = localStorage.getItem(LS_KEY);
+    if(d) S.projects = JSON.parse(d);
+  } catch(e){}
+  // Restore drive creds if previously connected
+  try{
+    const dc = localStorage.getItem(LS_DRIVE);
+    if(dc){ const o=JSON.parse(dc); driveState.fileId=o.fileId||null; }
+  } catch(e){}
+}
+
+// ── Master save — local + debounced Drive upload ──────────────────────────
+function save(){
+  saveLocal();
+  if(!driveState.connected) return;
+  // Debounce: wait 1.5s of inactivity before uploading
+  saveVersion++;
+  const v = saveVersion;
+  setSyncStatus('saving','Saving…');
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async ()=>{
+    if(saveVersion !== v) return; // newer save queued, skip
+    await driveUpload();
+  }, 1500);
+}
+
+// ── Sync status UI ────────────────────────────────────────────────────────
+function setSyncStatus(state, text){
+  const dot  = document.getElementById('sync-dot');
+  const txt  = document.getElementById('sync-status-txt');
+  const btn  = document.getElementById('sync-btn');
+  if(!dot) return;
+  dot.className = 'sync-dot ' + state;
+  if(txt) txt.textContent = text;
+  if(btn){
+    if(driveState.connected){
+      btn.textContent = '☁ Drive';
+      btn.className = 'sync-btn connected';
+      btn.title = 'Connected to Google Drive — click to disconnect';
+      btn.onclick = driveDisconnect;
+    } else {
+      btn.textContent = '☁ Connect Drive';
+      btn.className = 'sync-btn';
+      btn.onclick = driveSignIn;
+    }
+  }
+}
+
+// ── Google Identity Services sign-in ─────────────────────────────────────
+function driveSignIn(){
+  dismissDriveOverlay();
+  setSyncStatus('connecting','Connecting…');
+  const client = google.accounts.oauth2.initTokenClient({
+    client_id: CLIENT_ID,
+    scope: SCOPES,
+    callback: async (resp) => {
+      if(resp.error){ setSyncStatus('error','Auth failed'); return; }
+      driveState.token     = resp.access_token;
+      driveState.connected = true;
+      setSyncStatus('connecting','Finding file…');
+      // Find or create the data file
+      await driveEnsureFile();
+      // Load from Drive (may be newer than local)
+      await driveLoad();
+      setSyncStatus('saved','Synced ✓');
+      render();
+    }
+  });
+  client.requestAccessToken();
+}
+
+function driveDisconnect(){
+  driveState = { token:null, fileId:null, connected:false };
+  try{ localStorage.removeItem(LS_DRIVE); } catch(e){}
+  setSyncStatus('idle','Local only');
+  const btn=document.getElementById('sync-btn');
+  if(btn){ btn.textContent='☁ Connect Drive'; btn.className='sync-btn'; btn.onclick=driveSignIn; }
+}
+
+function dismissDriveOverlay(){
+  const o = document.getElementById('drive-overlay');
+  if(o) o.style.display='none';
+  // Remember they dismissed so we don't show it again this session
+  try{ sessionStorage.setItem('drive_dismissed','1'); } catch(e){}
+}
+
+// ── Drive file management ─────────────────────────────────────────────────
+async function driveEnsureFile(){
+  // Search for existing file by name
+  const q = encodeURIComponent(`name='${FILE_NAME}' and trashed=false`);
+  const r = await gFetch(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name,modifiedTime)`);
+  if(r.files && r.files.length > 0){
+    driveState.fileId = r.files[0].id;
+  } else {
+    // Create new empty file
+    const meta = { name: FILE_NAME, mimeType: 'application/json' };
+    const cr = await gFetch('https://www.googleapis.com/drive/v3/files', {
+      method:'POST', body: JSON.stringify(meta),
+      headers:{'Content-Type':'application/json'}
+    });
+    driveState.fileId = cr.id;
+    // Upload initial data
+    await driveUpload();
+  }
+  // Persist fileId
+  try{ localStorage.setItem(LS_DRIVE, JSON.stringify({fileId:driveState.fileId})); } catch(e){}
+}
+
+async function driveLoad(){
+  if(!driveState.fileId || !driveState.token) return;
+  try{
+    const resp = await fetch(
+      `https://www.googleapis.com/drive/v3/files/${driveState.fileId}?alt=media`,
+      { headers:{ Authorization:'Bearer '+driveState.token } }
+    );
+    if(!resp.ok) return;
+    const text = await resp.text();
+    if(!text.trim()) return;
+    const remote = JSON.parse(text);
+    if(!Array.isArray(remote)) return;
+    // Merge strategy: remote wins if it has more total messages
+    const localMsgs  = countMessages(S.projects);
+    const remoteMsgs = countMessages(remote);
+    if(remoteMsgs >= localMsgs){
+      S.projects = remote;
+      saveLocal();
+    }
+  } catch(e){ console.warn('Drive load failed:', e); }
+}
+
+async function driveUpload(){
+  if(!driveState.fileId || !driveState.token) return;
+  try{
+    const body = JSON.stringify(S.projects);
+    const resp = await fetch(
+      `https://www.googleapis.com/upload/drive/v3/files/${driveState.fileId}?uploadType=media`,
+      { method:'PATCH', headers:{ Authorization:'Bearer '+driveState.token, 'Content-Type':'application/json' }, body }
+    );
+    if(resp.ok){ setSyncStatus('saved','Saved to Drive ✓'); }
+    else { setSyncStatus('error','Save failed'); }
+  } catch(e){ setSyncStatus('error','Offline?'); }
+}
+
+function countMessages(projects){
+  let n=0;
+  try{ projects.forEach(p=>p.threads.forEach(t=>{ n+=(t.messages||[]).length; if(t.characters) t.characters.forEach(c=>n+=(c.messages||[]).length); })); } catch(e){}
+  return n;
+}
+
+async function gFetch(url, opts={}){
+  const resp = await fetch(url, {
+    ...opts,
+    headers:{ Authorization:'Bearer '+driveState.token, ...(opts.headers||{}) }
+  });
+  return resp.json();
+}
+function ensure(t){
+  if(!t.broadcast)t.broadcast={sys:false,notes:false,summary:false};
+  if(t.broadcastNotes===undefined)t.broadcastNotes='';
+  if(t.broadcastSummary===undefined)t.broadcastSummary='';
+  if(!t.receivesFrom)t.receivesFrom=[];
+  if(!t.messages)t.messages=[];
+  if(t.systemPrompt===undefined)t.systemPrompt='';
+  // Character folder fields
+  if(t.type==='characters'){
+    if(!t.characters)t.characters=[];
+  }
+  // Character sub-thread fields
+  if(t.isCharacter){
+    if(!t.profile)t.profile={name:'',role:'',age:'',appearance:'',traits:[],motivation:'',arc:'',backstory:'',relationships:'',notes:''};
+    if(t.broadcastProfile===undefined)t.broadcastProfile=false;
+    if(!t.messages)t.messages=[];
+  }
+  return t;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HELPERS
+// ─────────────────────────────────────────────────────────────────────────────
+function getProj(){return S.projects.find(p=>p.id===S.activeProj)||null;}
+function getTh(){
+  const p=getProj();if(!p)return null;
+  return p.threads.find(t=>t.id===S.activeTh)||null;
+}
+function findTh(id){for(const p of S.projects){const t=p.threads.find(x=>x.id===id);if(t)return t;}return null;}
+function findProjForTh(id){for(const p of S.projects){if(p.threads.find(t=>t.id===id))return p;}return null;}
+function uid(){return Math.random().toString(36).slice(2,10)+Date.now().toString(36);}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function fmt(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>').replace(/\n\n/g,'</p><p>').replace(/\n/g,'<br>').replace(/^(.+)$/s,'<p>$1</p>');}
+function closeModal(id){document.getElementById(id).style.display='none';}
+
+// Get thread order index within its project
+function thOrder(t){
+  const p=findProjForTh(t.id);
+  if(!p)return 0;
+  return p.threads.findIndex(x=>x.id===t.id);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CONTEXT LOGIC
+// ─────────────────────────────────────────────────────────────────────────────
+function buildContextBlock(src){
+  ensure(src); const parts=[];
+  if(src.broadcast.sys&&src.systemPrompt) parts.push({type:'sys',label:'Role / Focus',text:src.systemPrompt});
+  if(src.broadcast.notes&&src.broadcastNotes) parts.push({type:'notes',label:'Key Facts & Notes',text:src.broadcastNotes});
+  if(src.broadcast.summary&&src.broadcastSummary) parts.push({type:'sum',label:'Conversation Summary',text:src.broadcastSummary});
+  // Characters folder: include profiles of characters that have broadcastProfile enabled
+  if(src.type==='characters'&&src.characters){
+    src.characters.forEach(c=>{
+      if(c.broadcastProfile&&c.profile){
+        const pf=c.profile;
+        const lines=[
+          `Character: ${c.name||'(unnamed)'}`,
+          pf.role?`Role: ${pf.role}`:'',
+          pf.age?`Age: ${pf.age}`:'',
+          pf.appearance?`Appearance: ${pf.appearance}`:'',
+          pf.traits&&pf.traits.length?`Traits: ${pf.traits.join(', ')}`:'' ,
+          pf.motivation?`Motivation: ${pf.motivation}`:'',
+          pf.arc?`Arc: ${pf.arc}`:'',
+          pf.backstory?`Backstory: ${pf.backstory}`:'',
+          pf.relationships?`Relationships: ${pf.relationships}`:'',
+          pf.notes?`Notes: ${pf.notes}`:'',
+        ].filter(Boolean).join('\n');
+        parts.push({type:'charprofile',label:`Character Profile: ${c.name}`,text:lines});
+      }
+    });
+  }
+  return parts;
+}
+
+function buildSystemPrompt(thread){
+  ensure(thread); const parts=[];
+  if(thread.receivesFrom&&thread.receivesFrom.length){
+    const blocks=[];
+    for(const id of thread.receivesFrom){
+      const src=findTh(id); if(!src) continue;
+      const cb=buildContextBlock(src);
+      if(cb.length) blocks.push(`[Context from "${src.name}"]\n`+cb.map(b=>`${b.label}:\n${b.text}`).join('\n\n'));
+    }
+    if(blocks.length) parts.push(`=== SHARED CONTEXT FROM OTHER THREADS ===\nUse the following established information to stay consistent. Focus on this thread's own topic.\n\n${blocks.join('\n\n---\n\n')}\n=== END SHARED CONTEXT ===`);
+  }
+  if(thread.systemPrompt) parts.push(thread.systemPrompt);
+  return parts.join('\n\n');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// VISIBLE CONTEXT PANEL
+// ─────────────────────────────────────────────────────────────────────────────
+function renderCtxPanel(thread){
+  const panel=document.getElementById('ctx-panel');
+  const sources=document.getElementById('ctx-sources');
+  const label=document.getElementById('ctx-panel-label');
+  ensure(thread);
+  if(!thread.receivesFrom||!thread.receivesFrom.length){panel.classList.remove('visible');return;}
+
+  const items=[];
+  for(const id of thread.receivesFrom){
+    const src=findTh(id); if(!src) continue;
+    const blocks=buildContextBlock(src);
+    items.push({src,blocks});
+  }
+  const active=items.filter(x=>x.blocks.length>0);
+  if(!active.length){panel.classList.remove('visible');return;}
+
+  panel.classList.add('visible');
+  label.textContent=`Context loaded into this conversation from ${active.length} thread${active.length!==1?'s':''}`;
+
+  sources.innerHTML=active.map(({src,blocks})=>{
+    const bc=blocks.find(b=>b.type==='sys');
+    const bn=blocks.find(b=>b.type==='notes');
+    const bs=blocks.find(b=>b.type==='sum');
+    const id_=src.id;
+    return `<div class="ctx-source" id="cs-${id_}">
+      <div class="ctx-source-hdr" onclick="toggleCtxSource('${id_}')">
+        <span class="ctx-source-ico">${TICO[src.type]||'📄'}</span>
+        <span class="ctx-source-nm">${esc(src.name)}</span>
+        <span class="ctx-source-tags">
+          ${bs?'<span class="ctx-tag ctx-tag-s">summary</span>':''}
+          ${bn?'<span class="ctx-tag ctx-tag-n">notes</span>':''}
+          ${bc?'<span class="ctx-tag ctx-tag-p">sys</span>':''}
+        </span>
+        <span class="ctx-expand" id="ctx-expand-${id_}">▼</span>
+      </div>
+      <div class="ctx-source-body" id="ctx-body-${id_}">
+        ${blocks.map(b=>`<div class="ctx-block"><div class="ctx-block-lbl">${b.label}</div>${esc(b.text)}</div>`).join('')}
+        <div class="ctx-toggle">
+          <input type="checkbox" id="ctx-en-${id_}" checked onchange="toggleCtxEnable('${id_}',this.checked)">
+          <label for="ctx-en-${id_}">Include in this send</label>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleCtxSource(id){
+  const body=document.getElementById('ctx-body-'+id);
+  const exp=document.getElementById('ctx-expand-'+id);
+  const open=body.classList.toggle('open');
+  if(exp) exp.textContent=open?'▲':'▼';
+}
+
+// Per-send enable/disable overrides stored temporarily
+const ctxOverrides={};
+function toggleCtxEnable(id,val){ctxOverrides[id]=val;}
+
+function buildSystemPromptWithOverrides(thread){
+  ensure(thread); const parts=[];
+  if(thread.receivesFrom&&thread.receivesFrom.length){
+    const blocks=[];
+    for(const id of thread.receivesFrom){
+      if(ctxOverrides[id]===false) continue;
+      const src=findTh(id); if(!src) continue;
+      const cb=buildContextBlock(src);
+      if(cb.length) blocks.push(`[Context from "${src.name}"]\n`+cb.map(b=>`${b.label}:\n${b.text}`).join('\n\n'));
+    }
+    if(blocks.length) parts.push(`=== SHARED CONTEXT FROM OTHER THREADS ===\nUse the following established information to stay consistent. Focus on this thread's own topic.\n\n${blocks.join('\n\n---\n\n')}\n=== END SHARED CONTEXT ===`);
+  }
+  if(thread.systemPrompt) parts.push(thread.systemPrompt);
+  return parts.join('\n\n');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// INPUT MODE (chat vs freeform)
+// ─────────────────────────────────────────────────────────────────────────────
+function setMode(m){
+  S.inputMode=m;
+  document.getElementById('mode-chat').classList.toggle('active',m==='chat');
+  document.getElementById('mode-free').classList.toggle('active',m==='freeform');
+  const bar=document.getElementById('freeform-bar');
+  bar.style.display=m==='freeform'?'flex':'none';
+  const inp=document.getElementById('msg-input');
+  inp.placeholder=m==='freeform'?'Write freely… (AI reads but won\'t reply until you send)':'Write your message…';
+  document.getElementById('btn-send').title=m==='freeform'?'Post note (AI won\'t reply)':'Send message (AI will reply)';
+}
+function switchView(v){
+  S.curView=v;
+  document.getElementById('view-chat').style.display=v==='chat'?'flex':'none';
+  document.getElementById('view-flow').style.display=v==='flow'?'flex':'none';
+  document.getElementById('view-critique').style.display=v==='critique'?'flex':'none';
+  if(v!=='chat') document.getElementById('char-roster-view').style.display='none';
+  document.getElementById('tab-chat').classList.toggle('active',v==='chat');
+  document.getElementById('tab-flow').classList.toggle('active',v==='flow');
+  document.getElementById('tab-crit').classList.toggle('active',v==='critique');
+  if(v==='flow') renderFlowMap();
+  if(v==='critique') renderCritiqueScopes();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SIDEBAR RENDERING
+// ─────────────────────────────────────────────────────────────────────────────
+function renderSidebar(){
+  const el=document.getElementById('proj-list');
+  if(!S.projects.length){el.innerHTML=`<div style="padding:18px 14px;font-size:13px;color:#5a4a38;font-style:italic;line-height:1.6;">No projects yet.<br>Create one to begin.</div>`;return;}
+  el.innerHTML=S.projects.map(p=>{
+    const open=p.id===S.activeProj;
+    return `<div class="proj-group">
+      <div class="proj-hdr${open?' open-proj':''}" onclick="toggleProj('${p.id}')">
+        <span class="proj-ico" style="background:${p.color}22;color:${p.color}">${p.icon}</span>
+        <span class="proj-nm">${esc(p.name)}</span>
+        <button class="proj-del" onclick="promptDelProj(event,'${p.id}')" title="Delete project">✕</button>
+        <span class="proj-chev${open?' open':''}">▶</span>
+      </div>
+      ${open?`<div class="thread-list">${p.threads.map((t,i)=>{ensure(t);
+        const bc=t.broadcast.sys||t.broadcast.notes||t.broadcast.summary;
+        const rx=t.receivesFrom&&t.receivesFrom.length>0;
+        // Characters folder — special rendering
+        if(t.type==='characters'){
+          const charsOpen=S.activeTh===t.id||t.characters.some(c=>c.id===S.activeTh);
+          return `<div class="ti-chars-folder${t.id===S.activeTh?' active':''}" onclick="selTh('${p.id}','${t.id}')">
+            <span class="ti-drag" title="Drag to reorder">⠿</span>
+            <span class="ti-ico">👥</span>
+            <span class="ti-nm">${esc(t.name)}</span>
+            <span class="ti-order">${i+1}</span>
+            <span class="ti-badges">${bc?'<span class="b-bc">BC</span>':''}${rx?'<span class="b-rx">RX</span>':''}</span>
+            <span class="ti-chars-chev${charsOpen?' open':''}">▶</span>
+          </div>
+          ${charsOpen?`<div class="char-sub-list">
+            ${t.characters.map(c=>`
+              <div class="char-ti${c.id===S.activeTh?' active':''}" onclick="selChar('${p.id}','${t.id}','${c.id}')">
+                <span class="char-ti-drag">⠿</span>
+                <span class="char-ti-ico">${c.avatarImg?`<img src="${c.avatarImg}" style="width:14px;height:14px;border-radius:50%;object-fit:cover;vertical-align:middle;">`:c.icon||'👤'}</span>
+                <span class="char-ti-nm">${esc(c.name||'Unnamed')}</span>
+                <span class="char-ti-cnt">${c.messages.length}</span>
+              </div>`).join('')}
+            <button class="btn-add-char" onclick="openNewChar(event,'${p.id}','${t.id}')">＋ Add character</button>
+          </div>`:''}`;
+        }
+        // Normal thread
+        return `<div class="ti${t.id===S.activeTh?' active':''}"
+          draggable="true" data-tid="${t.id}" data-pid="${p.id}"
+          ondragstart="dragStart(event,'${p.id}','${t.id}')"
+          ondragover="dragOver(event)"
+          ondrop="dragDrop(event,'${p.id}','${t.id}')"
+          ondragleave="dragLeave(event)"
+          onclick="selTh('${p.id}','${t.id}')">
+          <span class="ti-drag" title="Drag to reorder">⠿</span>
+          <span class="ti-ico">${TICO[t.type]||'📄'}</span>
+          <span class="ti-nm">${esc(t.name)}</span>
+          <span class="ti-order">${i+1}</span>
+          <span class="ti-badges">${bc?'<span class="b-bc">BC</span>':''}${rx?'<span class="b-rx">RX</span>':''}</span>
+          <span class="ti-cnt">${t.messages.length}</span>
+        </div>`;}).join('')}
+        <button class="btn-add-th" onclick="openNewTh('${p.id}')">＋ Add thread</button>
+      </div>`:''}
+    </div>`;}).join('');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DRAG & DROP REORDER
+// ─────────────────────────────────────────────────────────────────────────────
+function dragStart(e,pid,tid){
+  S.dragSrc={pid,tid};
+  e.dataTransfer.effectAllowed='move';
+  e.target.closest('.ti').style.opacity='.4';
+}
+function dragOver(e){
+  e.preventDefault(); e.dataTransfer.dropEffect='move';
+  e.target.closest('.ti')?.classList.add('drag-over');
+}
+function dragLeave(e){e.target.closest('.ti')?.classList.remove('drag-over');}
+function dragDrop(e,pid,tid){
+  e.preventDefault();
+  e.target.closest('.ti')?.classList.remove('drag-over');
+  if(!S.dragSrc||S.dragSrc.tid===tid) return;
+  // Only reorder within same project
+  if(S.dragSrc.pid!==pid) return;
+  const p=S.projects.find(x=>x.id===pid); if(!p) return;
+  const fromIdx=p.threads.findIndex(t=>t.id===S.dragSrc.tid);
+  const toIdx=p.threads.findIndex(t=>t.id===tid);
+  if(fromIdx<0||toIdx<0) return;
+  const [item]=p.threads.splice(fromIdx,1);
+  p.threads.splice(toIdx,0,item);
+  S.dragSrc=null; save(); render();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// THREAD VIEW RENDERING
+// ─────────────────────────────────────────────────────────────────────────────
+function renderThreadView(){
+  const tv=document.getElementById('thread-view'); const ns=document.getElementById('no-th-st');
+  // Check if active selection is a character sub-thread
+  const charData=getActiveChar();
+  if(charData){
+    ns.style.display='none'; tv.style.display='flex';
+    renderCharView(charData);
+    return;
+  }
+  const t=getTh();
+  if(!t){tv.style.display='none';ns.style.display='flex';document.getElementById('ctx-panel').classList.remove('visible');return;}
+  ensure(t); ns.style.display='none'; tv.style.display='flex';
+  // Characters folder — show roster view instead of chat
+  if(t.type==='characters'){
+    showChatOrChar('roster');
+    renderCharRoster(t);
+    return;
+  }
+  // Normal thread — show chat
+  showChatOrChar('chat');
+  const p=getProj();
+  const ord=p?p.threads.findIndex(x=>x.id===t.id)+1:0;
+  document.getElementById('tb-ico').textContent=TICO[t.type]||'📄';
+  document.getElementById('tb-nm').textContent=`${ord}. ${t.name}`;
+  document.getElementById('tb-path').textContent=p?p.name:'';
+  ['bc','rx','sys'].forEach(n=>{
+    document.getElementById('btn-'+n).classList.toggle('on',S.openPanel===n);
+    document.getElementById('panel-'+n).classList.toggle('open',S.openPanel===n);
+  });
+  document.getElementById('bc-sys').checked=t.broadcast.sys;
+  document.getElementById('bc-notes').checked=t.broadcast.notes;
+  document.getElementById('bc-sum').checked=t.broadcast.summary;
+  document.getElementById('bc-notes-txt').value=t.broadcastNotes||'';
+  renderSumPreview(t);
+  renderRxList(t);
+  document.getElementById('sys-inp').value=t.systemPrompt||'';
+  renderCtxPanel(t);
+  renderMsgs();
+}
+
+function showChatOrChar(which){
+  const freeBar=document.getElementById('freeform-bar');
+  const msgs=document.getElementById('msgs');
+  const inpArea=msgs.nextElementSibling;
+  const charView=document.getElementById('char-view');
+  const rosterView=document.getElementById('char-roster-view');
+  const threadView=document.getElementById('thread-view');
+  const viewChat=document.getElementById('view-chat');
+  const topbar=document.getElementById('topbar');
+  const ctxPanel=document.getElementById('ctx-panel');
+  // Hide all first
+  freeBar.style.display='none';
+  msgs.style.display='none';
+  if(inpArea) inpArea.style.display='none';
+  charView.style.display='none';
+  rosterView.style.display='none';
+  topbar.style.display='';
+  ctxPanel.style.display='none';
+  if(which==='chat'){
+    viewChat.style.display='flex';
+    if(threadView) threadView.style.display='flex';
+    freeBar.style.display=S.inputMode==='freeform'?'flex':'none';
+    msgs.style.display='';
+    if(inpArea) inpArea.style.display='';
+    ctxPanel.style.display='';
+  } else if(which==='char'){
+    viewChat.style.display='flex';
+    if(threadView) threadView.style.display='flex';
+    charView.style.display='flex';
+  } else if(which==='roster'){
+    viewChat.style.display='none';
+    rosterView.style.display='flex';
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CHARACTER HELPERS
+// ─────────────────────────────────────────────────────────────────────────────
+function getActiveChar(){
+  // Returns {proj, thread, char} if activeTh is a character id
+  for(const p of S.projects){
+    for(const t of p.threads){
+      if(t.type==='characters'&&t.characters){
+        const c=t.characters.find(x=>x.id===S.activeTh);
+        if(c) return {proj:p,thread:t,char:c};
+      }
+    }
+  }
+  return null;
+}
+
+function findCharById(cid){
+  for(const p of S.projects)
+    for(const t of p.threads)
+      if(t.type==='characters'&&t.characters){
+        const c=t.characters.find(x=>x.id===cid);
+        if(c) return c;
+      }
+  return null;
+}
+
+function selChar(pid,tid,cid){
+  S.activeProj=pid; S.activeTh=cid; S.openPanel=null;
+  if(S.curView!=='chat') switchView('chat');
+  render();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CHARACTER ROSTER
+// ─────────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// CHARACTER ROSTER
+// ─────────────────────────────────────────────────────────────────────────────
+let rosterThread=null; // reference to current thread for rerenderRoster
+
+function renderCharRoster(thread){
+  ensure(thread);
+  rosterThread=thread;
+  const proj=getProj();
+  document.getElementById('roster-title').textContent=thread.name;
+  document.getElementById('btn-roster-add').onclick=()=>openNewChar(new Event('click'), proj.id, thread.id);
+  // Close any open gear menus on outside click
+  document.addEventListener('click', closeAllGearMenus, {once:false});
+  rerenderRoster();
+}
+
+function rerenderRoster(){
+  const thread=rosterThread; if(!thread) return;
+  ensure(thread);
+  const proj=getProj(); if(!proj) return;
+  const grid=document.getElementById('roster-grid');
+  const sortMode=document.getElementById('roster-sort')?.value||'default';
+  let chars=[...( thread.characters||[])];
+  // Ensure pinned field
+  chars.forEach(c=>{if(c.pinned===undefined)c.pinned=false;});
+  // Sort
+  if(sortMode==='pinned'){
+    chars.sort((a,b)=>( b.pinned?1:0)-(a.pinned?1:0));
+  } else if(sortMode==='name'){
+    chars.sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+  } else if(sortMode==='role'){
+    chars.sort((a,b)=>((a.profile?.role||'zzz').localeCompare(b.profile?.role||'zzz')));
+  } else if(sortMode==='msgs'){
+    chars.sort((a,b)=>(b.messages?.length||0)-(a.messages?.length||0));
+  } else {
+    // default: pinned always bubble up
+    chars.sort((a,b)=>(b.pinned?1:0)-(a.pinned?1:0));
+  }
+  grid.innerHTML='';
+
+  // Pinned section label if any pinned
+  const hasPinned=chars.some(c=>c.pinned);
+  const hasUnpinned=chars.some(c=>!c.pinned);
+  let shownPinnedLabel=false, shownUnpinnedLabel=false;
+
+  chars.forEach((c,idx)=>{
+    ensure(c);
+    const pf=c.profile||{};
+    const traits=(pf.traits||[]).slice(0,3);
+
+    // Section labels when showing pinned-first or default
+    if((sortMode==='default'||sortMode==='pinned') && hasPinned && hasUnpinned){
+      if(c.pinned && !shownPinnedLabel){
+        const lbl=document.createElement('div');
+        lbl.className='roster-section-label';
+        lbl.textContent='📌 Pinned';
+        grid.appendChild(lbl);
+        shownPinnedLabel=true;
+      }
+      if(!c.pinned && !shownUnpinnedLabel){
+        const lbl=document.createElement('div');
+        lbl.className='roster-section-label';
+        lbl.textContent='Characters';
+        grid.appendChild(lbl);
+        shownUnpinnedLabel=true;
+      }
+    }
+
+    const card=document.createElement('div');
+    card.className='char-card'+(c.pinned?' pinned':'');
+    card.dataset.cid=c.id;
+
+    const portrait=c.avatarImg
+      ? `<img src="${c.avatarImg}" alt="${esc(c.name||'')}">`
+      : `<span>${c.icon||'👤'}</span>`;
+
+    card.innerHTML=`
+      <div class="char-card-portrait">
+        ${portrait}
+        <button class="char-pin-btn${c.pinned?' active':''}" title="${c.pinned?'Unpin':'Pin to top'}" onclick="rosterPin(event,'${c.id}')">${c.pinned?'📌':'📍'}</button>
+        <button class="char-gear-btn" title="Options" onclick="toggleGearMenu(event,'gear-${c.id}')">⚙</button>
+        <div class="char-gear-menu" id="gear-${c.id}">
+          <button class="char-gear-item" onclick="rosterUploadImg(event,'${c.id}')">🖼 Change Portrait</button>
+          <button class="char-gear-item" onclick="rosterMoveUp(event,'${c.id}')">↑ Move Up</button>
+          <button class="char-gear-item" onclick="rosterMoveDown(event,'${c.id}')">↓ Move Down</button>
+          <button class="char-gear-item danger" onclick="rosterDelete(event,'${proj.id}','${thread.id}','${c.id}')">✕ Delete</button>
+        </div>
+        <input type="file" id="card-img-${c.id}" accept="image/*" style="display:none" onchange="rosterImgLoaded(event,'${c.id}')">
+      </div>
+      <div class="char-card-body" onclick="selChar('${proj.id}','${thread.id}','${c.id}')">
+        <div class="char-card-name">${esc(c.name||'Unnamed')}</div>
+        <div class="char-card-role">${esc(pf.role||'—')}</div>
+        <div class="char-card-traits">${traits.map(tr=>`<span class="char-card-trait">${esc(tr)}</span>`).join('')}</div>
+        <div class="char-card-msgs">${c.messages.length} msg${c.messages.length!==1?'s':''}</div>
+      </div>`;
+    grid.appendChild(card);
+  });
+
+  if(!chars.length){
+    grid.innerHTML=`<div class="roster-empty">
+      <div class="re-ico">👤</div>
+      <h3>No characters yet</h3>
+      <p>Add your first character using the button below.</p>
+    </div>`;
+  }
+}
+
+function closeAllGearMenus(){
+  document.querySelectorAll('.char-gear-menu.open').forEach(m=>m.classList.remove('open'));
+}
+function toggleGearMenu(e, menuId){
+  e.stopPropagation();
+  const menu=document.getElementById(menuId); if(!menu) return;
+  const wasOpen=menu.classList.contains('open');
+  closeAllGearMenus();
+  if(!wasOpen) menu.classList.add('open');
+}
+function rosterPin(e, cid){
+  e.stopPropagation();
+  const thread=rosterThread; if(!thread) return;
+  const c=thread.characters?.find(x=>x.id===cid); if(!c) return;
+  c.pinned=!c.pinned;
+  save(); rerenderRoster();
+}
+function rosterMoveUp(e, cid){
+  e.stopPropagation(); closeAllGearMenus();
+  const thread=rosterThread; if(!thread||!thread.characters) return;
+  const idx=thread.characters.findIndex(x=>x.id===cid); if(idx<=0) return;
+  const [item]=thread.characters.splice(idx,1);
+  thread.characters.splice(idx-1,0,item);
+  save(); rerenderRoster();
+}
+function rosterMoveDown(e, cid){
+  e.stopPropagation(); closeAllGearMenus();
+  const thread=rosterThread; if(!thread||!thread.characters) return;
+  const idx=thread.characters.findIndex(x=>x.id===cid);
+  if(idx<0||idx>=thread.characters.length-1) return;
+  const [item]=thread.characters.splice(idx,1);
+  thread.characters.splice(idx+1,0,item);
+  save(); rerenderRoster();
+}
+function rosterDelete(e, pid, tid, cid){
+  e.stopPropagation(); closeAllGearMenus();
+  if(!confirm('Delete this character?')) return;
+  const p=S.projects.find(x=>x.id===pid); if(!p) return;
+  const t=p.threads.find(x=>x.id===tid); if(!t) return;
+  t.characters=t.characters.filter(x=>x.id!==cid);
+  save(); renderSidebar(); rerenderRoster();
+}
+function rosterUploadImg(e, cid){
+  e.stopPropagation(); closeAllGearMenus();
+  document.getElementById('card-img-'+cid)?.click();
+}
+function rosterImgLoaded(e, cid){
+  const file=e.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    const thread=rosterThread; if(!thread) return;
+    const c=thread.characters?.find(x=>x.id===cid); if(!c) return;
+    c.avatarImg=ev.target.result;
+    save(); rerenderRoster();
+  };
+  reader.readAsDataURL(file);
+  e.target.value='';
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// COLLAPSIBLE PROFILE PANEL
+// ─────────────────────────────────────────────────────────────────────────────
+let profCollapsed=false;
+function toggleProfilePanel(){
+  profCollapsed=!profCollapsed;
+  const panel=document.getElementById('char-profile-panel');
+  const btn=document.getElementById('prof-collapse-btn');
+  panel.classList.toggle('prof-collapsed', profCollapsed);
+  if(btn){
+    btn.style.left=profCollapsed?'0':'280px';
+    btn.textContent=profCollapsed?'▶':'◀';
+  }
+}
+function resetProfilePanel(){
+  // Always open when switching to a new character
+  if(profCollapsed) toggleProfilePanel();
+}
+
+function renderCharView({proj,thread,char}){
+  ensure(char);
+  showChatOrChar('char');
+  resetProfilePanel();
+  // Topbar
+  document.getElementById('tb-ico').textContent=char.icon||'👤';
+  document.getElementById('tb-nm').textContent=esc(char.name||'Unnamed Character');
+  document.getElementById('tb-path').textContent=`${proj.name} › ${thread.name}`;
+  // Hide broadcast/receive/sys buttons — character has its own footer controls
+  ['bc','rx','sys'].forEach(n=>{
+    document.getElementById('btn-'+n).classList.toggle('on',false);
+    document.getElementById('panel-'+n).classList.toggle('open',false);
+  });
+  // Avatar — image or emoji
+  const emojiEl=document.getElementById('char-avatar-emoji');
+  const imgEl=document.getElementById('char-avatar-img');
+  const removeBtn=document.getElementById('btn-remove-img');
+  if(char.avatarImg){
+    imgEl.src=char.avatarImg; imgEl.style.display='block';
+    emojiEl.style.display='none'; removeBtn.style.display='block';
+  } else {
+    imgEl.style.display='none'; imgEl.src='';
+    emojiEl.textContent=char.icon||'👤'; emojiEl.style.display='';
+    removeBtn.style.display='none';
+  }
+  // Profile header text
+  document.getElementById('char-profile-name').textContent=char.name||'Unnamed';
+  document.getElementById('char-profile-proj').textContent=`${proj.name} › ${thread.name}`;
+  const pf=char.profile||{};
+  document.getElementById('cp-name').value=pf.name||'';
+  // Role — detect custom
+  const stdRoles=['','Protagonist','Antagonist','Deuteragonist','Supporting','Mentor','Love Interest','Comic Relief','Foil','Minor'];
+  const roleVal=pf.role||'';
+  const isCustomRole=roleVal && !stdRoles.includes(roleVal);
+  const roleSelect=document.getElementById('cp-role');
+  const customRow=document.getElementById('role-custom-row');
+  const customInp=document.getElementById('cp-role-custom');
+  if(isCustomRole){
+    roleSelect.value='__custom__';
+    customRow.classList.add('visible');
+    customInp.value=roleVal;
+  } else {
+    roleSelect.value=roleVal;
+    customRow.classList.remove('visible');
+    customInp.value='';
+  }
+  document.getElementById('cp-age').value=pf.age||'';
+  document.getElementById('cp-appearance').value=pf.appearance||'';
+  document.getElementById('cp-motivation').value=pf.motivation||'';
+  document.getElementById('cp-arc').value=pf.arc||'';
+  document.getElementById('cp-backstory').value=pf.backstory||'';
+  document.getElementById('cp-relationships').value=pf.relationships||'';
+  document.getElementById('cp-notes').value=pf.notes||'';
+  document.getElementById('char-bc-profile').checked=!!char.broadcastProfile;
+  renderTraitPills(pf.traits||[]);
+  renderCharMsgs(char);
+  document.getElementById('char-m-badge').textContent=document.getElementById('model-sel').value.split('-').slice(0,2).join('-');
+  document.getElementById('char-mode-chat').classList.toggle('active',S.charInputMode==='chat');
+  document.getElementById('char-mode-free').classList.toggle('active',S.charInputMode==='freeform');
+}
+
+function renderTraitPills(traits){
+  const wrap=document.getElementById('cp-traits-wrap');
+  const input=document.getElementById('cp-trait-input');
+  // Remove existing pills
+  Array.from(wrap.querySelectorAll('.trait-pill')).forEach(el=>el.remove());
+  traits.forEach((tr,i)=>{
+    const pill=document.createElement('span');
+    pill.className='trait-pill';
+    pill.innerHTML=`${esc(tr)}<span class="trait-pill-del" onclick="removeTrait(${i})">×</span>`;
+    wrap.insertBefore(pill, input);
+  });
+}
+
+function focusTraitInput(){document.getElementById('cp-trait-input').focus();}
+
+function traitKey(e){
+  if(e.key==='Enter'||e.key===','){
+    e.preventDefault();
+    const val=e.target.value.trim().replace(/,/g,'');
+    if(!val) return;
+    const d=getActiveChar(); if(!d) return;
+    ensure(d.char);
+    if(!d.char.profile.traits)d.char.profile.traits=[];
+    d.char.profile.traits.push(val);
+    e.target.value='';
+    renderTraitPills(d.char.profile.traits);
+    save();
+  }
+}
+
+function removeTrait(idx){
+  const d=getActiveChar(); if(!d) return;
+  d.char.profile.traits.splice(idx,1);
+  renderTraitPills(d.char.profile.traits);
+  save();
+}
+
+function onRoleChange(){
+  const sel=document.getElementById('cp-role');
+  const customRow=document.getElementById('role-custom-row');
+  const customInp=document.getElementById('cp-role-custom');
+  if(sel.value==='__custom__'){
+    customRow.classList.add('visible');
+    customInp.focus();
+  } else {
+    customRow.classList.remove('visible');
+    customInp.value='';
+    saveCharProfile();
+  }
+}
+
+function triggerAvatarUpload(){
+  document.getElementById('char-img-file').click();
+}
+
+function loadCharImg(e){
+  const file=e.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    const d=getActiveChar(); if(!d) return;
+    d.char.avatarImg=ev.target.result;
+    save();
+    // Update UI
+    const imgEl=document.getElementById('char-avatar-img');
+    const emojiEl=document.getElementById('char-avatar-emoji');
+    const removeBtn=document.getElementById('btn-remove-img');
+    imgEl.src=ev.target.result; imgEl.style.display='block';
+    emojiEl.style.display='none'; removeBtn.style.display='block';
+    // Also update sidebar icon hint
+    renderSidebar();
+  };
+  reader.readAsDataURL(file);
+  e.target.value=''; // reset so same file can be re-selected
+}
+
+function removeCharImg(){
+  const d=getActiveChar(); if(!d) return;
+  d.char.avatarImg=null;
+  save();
+  const imgEl=document.getElementById('char-avatar-img');
+  const emojiEl=document.getElementById('char-avatar-emoji');
+  const removeBtn=document.getElementById('btn-remove-img');
+  imgEl.style.display='none'; imgEl.src='';
+  emojiEl.textContent=d.char.icon||'👤'; emojiEl.style.display='';
+  removeBtn.style.display='none';
+}
+
+function saveCharProfile(){
+  const d=getActiveChar(); if(!d) return;
+  ensure(d.char);
+  const pf=d.char.profile;
+  pf.name=document.getElementById('cp-name').value;
+  // Role: custom or selected
+  const roleSelect=document.getElementById('cp-role');
+  if(roleSelect.value==='__custom__'){
+    pf.role=document.getElementById('cp-role-custom').value;
+  } else {
+    pf.role=roleSelect.value;
+  }
+  pf.age=document.getElementById('cp-age').value;
+  pf.appearance=document.getElementById('cp-appearance').value;
+  pf.motivation=document.getElementById('cp-motivation').value;
+  pf.arc=document.getElementById('cp-arc').value;
+  pf.backstory=document.getElementById('cp-backstory').value;
+  pf.relationships=document.getElementById('cp-relationships').value;
+  pf.notes=document.getElementById('cp-notes').value;
+  if(pf.name) d.char.name=pf.name;
+  save(); renderSidebar();
+}
+
+function saveCharBc(){
+  const d=getActiveChar(); if(!d) return;
+  d.char.broadcastProfile=document.getElementById('char-bc-profile').checked;
+  save();
+}
+
+function renderCharMsgs(char){
+  const area=document.getElementById('char-msgs');
+  const empty=document.getElementById('char-empty-st');
+  if(!char.messages||!char.messages.length){
+    Array.from(area.children).forEach(c=>{if(c!==empty)c.remove();});
+    empty.style.display='flex'; return;
+  }
+  empty.style.display='none';
+  Array.from(area.children).forEach(c=>{if(c!==empty)c.remove();});
+  const frag=document.createDocumentFragment();
+  char.messages.forEach(m=>{
+    const div=document.createElement('div');
+    div.innerHTML=buildMsgHTML(m);
+    frag.appendChild(div.firstElementChild);
+  });
+  area.appendChild(frag);
+  area.scrollTop=area.scrollHeight;
+}
+
+function handleCharKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendCharMsg();}}
+function setCharMode(m){
+  S.charInputMode=m;
+  document.getElementById('char-mode-chat').classList.toggle('active',m==='chat');
+  document.getElementById('char-mode-free').classList.toggle('active',m==='freeform');
+}
+
+async function sendCharMsg(){
+  if(S.charGenerating) return;
+  const d=getActiveChar(); if(!d) return;
+  const inp=document.getElementById('char-msg-input');
+  const text=inp.value.trim(); if(!text) return;
+  const time=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  if(S.charInputMode==='freeform'){
+    d.char.messages.push({role:'user',content:text,time,freeform:true});
+    inp.value=''; inp.style.height='auto';
+    save(); renderCharMsgs(d.char); return;
+  }
+  const key=document.getElementById('api-key').value.trim();
+  if(!key) return alert('Please enter your API key.');
+  d.char.messages.push({role:'user',content:text,time});
+  inp.value=''; inp.style.height='auto';
+  save(); renderCharMsgs(d.char);
+  S.charGenerating=true; document.getElementById('char-btn-send').disabled=true;
+  // Thinking bubble
+  const area=document.getElementById('char-msgs');
+  const el=document.createElement('div'); el.className='msg assistant'; el.id='char-think';
+  el.innerHTML='<div class="av">✦</div><div class="mb"><div class="bub think-bub"><div class="dots"><span></span><span></span><span></span></div> Thinking…</div></div>';
+  area.appendChild(el); area.scrollTop=area.scrollHeight;
+  try{
+    // Build system prompt: character context + parent thread context
+    const charCtx=buildCharSystemPrompt(d.char, d.thread);
+    const msgs=d.char.messages.filter(m=>m.role==='user'||m.role==='assistant').map(m=>({role:m.role,content:m.content}));
+    const reply=await callLLMRaw(charCtx, msgs, key);
+    d.char.messages.push({role:'assistant',content:reply,time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})});
+    save();
+  }catch(e){d.char.messages.push({role:'assistant',content:'⚠ Error: '+e.message,time:''});save();}
+  finally{S.charGenerating=false; document.getElementById('char-btn-send').disabled=false; renderCharMsgs(d.char); renderSidebar();}
+}
+
+function buildCharSystemPrompt(char, parentThread){
+  const pf=char.profile||{};
+  const profileSnippet=[
+    pf.name?`Name: ${pf.name}`:'',
+    pf.role?`Role: ${pf.role}`:'',
+    pf.age?`Age: ${pf.age}`:'',
+    pf.traits&&pf.traits.length?`Traits: ${pf.traits.join(', ')}`:''
+  ].filter(Boolean).join('\n');
+  const base=`You are a character development assistant focused exclusively on the character "${char.name||'this character'}".${profileSnippet?'\n\nCurrent profile:\n'+profileSnippet:''}\n\nHelp develop this character's backstory, voice, motivation, arc, and relationships. Stay focused on this character.`;
+  // Also include parent thread context if it has receivesFrom
+  ensure(parentThread);
+  const parentCtx=buildSystemPromptWithOverrides(parentThread);
+  return [base, parentCtx].filter(Boolean).join('\n\n');
+}
+
+async function genCharProfile(){
+  const d=getActiveChar(); if(!d) return;
+  if(!d.char.messages.length){alert('Have a conversation about this character first, then auto-fill.');return;}
+  const key=document.getElementById('api-key').value.trim();
+  if(!key){alert('Enter your API key first.');return;}
+  const btn=document.getElementById('btn-gen-profile');
+  btn.disabled=true; btn.textContent='✦ Generating…';
+  const convo=d.char.messages.map(m=>`${m.role==='user'?'Author':'AI'}: ${m.content}`).join('\n\n');
+  const prompt=`Based on the following character development conversation, extract and fill in a structured character profile. Return ONLY valid JSON with these exact keys: name, role, age, appearance, traits (array of strings), motivation, arc, backstory, relationships, notes. Use empty string or empty array if unknown.\n\n${convo}`;
+  try{
+    const provider=document.getElementById('provider-sel').value;
+    const model=document.getElementById('model-sel').value;
+    let result='';
+    if(provider==='anthropic'){
+      const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model,max_tokens:600,messages:[{role:'user',content:prompt}]})});
+      const data=await r.json(); result=data.content?.map(b=>b.text||'').join('')||'';
+    } else {
+      const r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${key}`},body:JSON.stringify({model,messages:[{role:'user',content:prompt}],max_tokens:600})});
+      const data=await r.json(); result=data.choices?.[0]?.message?.content||'';
+    }
+    const clean=result.replace(/```json|```/g,'').trim();
+    const parsed=JSON.parse(clean);
+    ensure(d.char);
+    Object.assign(d.char.profile, parsed);
+    if(parsed.name) d.char.name=parsed.name;
+    save(); renderCharView(d);
+  }catch(e){alert('Could not parse profile: '+e.message);}
+  finally{btn.disabled=false; btn.textContent='✦ Auto-fill profile from conversation';}
+}
+
+async function callLLMRaw(system, messages, key){
+  const provider=document.getElementById('provider-sel').value;
+  const model=document.getElementById('model-sel').value;
+  if(provider==='anthropic'){
+    const body={model,max_tokens:1500,messages};
+    if(system) body.system=system;
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify(body)});
+    if(!r.ok){const e=await r.json();throw new Error(e.error?.message||r.statusText);}
+    const d=await r.json(); return d.content.map(b=>b.text||'').join('');
+  } else {
+    const ms=[];if(system)ms.push({role:'system',content:system});ms.push(...messages);
+    const url=provider==='openai'?'https://api.openai.com/v1/chat/completions':'http://localhost:11434/v1/chat/completions';
+    const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${key}`},body:JSON.stringify({model,messages:ms,max_tokens:1500})});
+    if(!r.ok){const e=await r.json();throw new Error(e.error?.message||r.statusText);}
+    const d=await r.json(); return d.choices[0].message.content;
+  }
+}
+
+function openNewChar(e, pid, tid){
+  e.stopPropagation();
+  S.pendingCharParent={pid,tid};
+  S.newCharIcon='👤';
+  const CHAR_ICONS=['👤','🧙','🗡️','👸','🤴','🧝','🧛','🧟','🧜','🧚','👷','🕵️','🪄','💀','👁️','🐉','🌙','⚔️','🔮','🌹'];
+  document.getElementById('char-icon-row').innerHTML=CHAR_ICONS.map(i=>`<span class="icon-opt${i===S.newCharIcon?' sel':''}" onclick="selCharIcon('${i}')">${i}</span>`).join('');
+  document.getElementById('char-nm-inp').value='';
+  document.getElementById('char-sys-inp').value='';
+  document.getElementById('char-modal').style.display='flex';
+  setTimeout(()=>document.getElementById('char-nm-inp').focus(),50);
+}
+
+function selCharIcon(i){
+  S.newCharIcon=i;
+  document.querySelectorAll('#char-icon-row .icon-opt').forEach(el=>{
+    el.classList.toggle('sel', el.textContent===i);
+  });
+}
+
+function createCharacter(){
+  const name=document.getElementById('char-nm-inp').value.trim();
+  if(!name) return document.getElementById('char-nm-inp').focus();
+  const sys=document.getElementById('char-sys-inp').value.trim();
+  const {pid,tid}=S.pendingCharParent;
+  const p=S.projects.find(x=>x.id===pid); if(!p) return;
+  const t=p.threads.find(x=>x.id===tid); if(!t) return;
+  ensure(t);
+  const c={
+    id:uid(), name, icon:S.newCharIcon,
+    isCharacter:true,
+    systemPrompt:sys||`You are helping develop the character "${name}". Stay focused on this character's psychology, backstory, relationships, and arc.`,
+    messages:[],
+    broadcastProfile:false,
+    profile:{name,role:'',age:'',appearance:'',traits:[],motivation:'',arc:'',backstory:'',relationships:'',notes:''}
+  };
+  t.characters.push(c);
+  S.activeProj=pid; S.activeTh=c.id;
+  save(); closeModal('char-modal'); render();
+}
+
+function renderSumPreview(t){
+  const pv=document.getElementById('sum-preview');const tx=document.getElementById('sum-txt');
+  if(t.broadcastSummary){pv.style.display='block';tx.textContent=t.broadcastSummary;}
+  else pv.style.display='none';
+}
+
+function renderRxList(t){
+  const list=document.getElementById('rx-list'); const empty=document.getElementById('rx-empty');
+  const cands=[];
+  for(const p of S.projects) for(let i=0;i<p.threads.length;i++){
+    const th=p.threads[i]; if(th.id===t.id) continue; ensure(th);
+    cands.push({p,th,order:i});
+  }
+  if(!cands.length){list.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  // Sort: same project first, by order
+  cands.sort((a,b)=>{
+    const ap=a.p.id===S.activeProj?0:1;const bp=b.p.id===S.activeProj?0:1;
+    if(ap!==bp)return ap-bp;
+    return a.order-b.order;
+  });
+  list.innerHTML=cands.map(({p,th,order})=>{
+    const chk=t.receivesFrom.includes(th.id);
+    const hasSm=!!th.broadcastSummary&&th.broadcast.summary;
+    const hasN=!!th.broadcastNotes&&th.broadcast.notes;
+    const hasSy=!!th.systemPrompt&&th.broadcast.sys;
+    const samePrj=p.id===S.activeProj;
+    return `<div class="rx-row${chk?' on':''}" id="rxr-${th.id}">
+      <input type="checkbox" ${chk?'checked':''} onchange="toggleRx('${th.id}',this.checked)">
+      <div class="rx-info">
+        <div class="rx-nm">${TICO[th.type]||'📄'} ${esc(th.name)}</div>
+        <div class="rx-proj">${esc(p.name)}</div>
+      </div>
+      ${samePrj?`<span class="rx-order" title="Order in project">#${order+1}</span>`:''}
+      <div class="rx-bgs">
+        ${hasSm?'<span class="rxb rxb-s">summary</span>':''}
+        ${hasN?'<span class="rxb rxb-n">notes</span>':''}
+        ${hasSy?'<span class="rxb rxb-p">sys</span>':''}
+        ${!hasSm&&!hasN&&!hasSy?'<span class="rxb rxb-none">no broadcast</span>':''}
+      </div>
+    </div>`;}).join('');
+}
+
+function renderMsgs(){
+  const area=document.getElementById('msgs'); const empty=document.getElementById('empty-st');
+  const t=getTh(); if(!t) return;
+  if(!t.messages.length){
+    // Clear everything except the empty state placeholder, then show it
+    Array.from(area.children).forEach(c=>{if(c!==empty)c.remove();});
+    empty.style.display='flex';
+    return;
+  }
+  empty.style.display='none';
+  // Remove all non-empty-state children first
+  Array.from(area.children).forEach(c=>{if(c!==empty)c.remove();});
+  const frag=document.createDocumentFragment();
+  t.messages.forEach(m=>{
+    const div=document.createElement('div');
+    div.innerHTML=buildMsgHTML(m);
+    frag.appendChild(div.firstElementChild);
+  });
+  area.appendChild(frag);
+  area.scrollTop=area.scrollHeight;
+}
+
+function buildMsgHTML(m){
+  if(m.freeform){
+    return `<div class="msg user" style="opacity:.85;">
+      <div class="av" style="background:rgba(155,143,170,.15);color:var(--gold);font-size:11px;" title="Freeform note">✏</div>
+      <div class="mb">
+        <div class="bub" style="background:rgba(155,143,170,.08);border:1px solid rgba(155,143,170,.2);color:var(--ink);border-radius:4px 4px 0 4px;">${fmt(m.content)}</div>
+        <div class="mt" style="display:flex;gap:6px;align-items:center;">${m.time||''} <span style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--gold);opacity:.6;">freeform</span></div>
+      </div>
+    </div>`;
+  }
+  return `<div class="msg ${m.role}">
+    <div class="av">${m.role==='user'?'✍':'✦'}</div>
+    <div class="mb"><div class="bub">${fmt(m.content)}</div><div class="mt">${m.time||''}</div></div>
+  </div>`;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PANELS
+// ─────────────────────────────────────────────────────────────────────────────
+function togglePanel(name){
+  S.openPanel=S.openPanel===name?null:name;
+  ['bc','rx','sys'].forEach(n=>{
+    document.getElementById('panel-'+n).classList.toggle('open',S.openPanel===n);
+    document.getElementById('btn-'+n).classList.toggle('on',S.openPanel===n);
+  });
+  if(name==='rx'){const t=getTh();if(t)renderRxList(t);}
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SAVES
+// ─────────────────────────────────────────────────────────────────────────────
+function saveBc(){
+  const t=getTh();if(!t)return;ensure(t);
+  t.broadcast.sys=document.getElementById('bc-sys').checked;
+  t.broadcast.notes=document.getElementById('bc-notes').checked;
+  t.broadcast.summary=document.getElementById('bc-sum').checked;
+  t.broadcastNotes=document.getElementById('bc-notes-txt').value;
+  save(); renderSidebar(); renderCtxPanel(t);
+}
+function saveSys(){const t=getTh();if(!t)return;t.systemPrompt=document.getElementById('sys-inp').value;save();}
+function toggleRx(id,chk){
+  const t=getTh();if(!t)return;ensure(t);
+  if(chk){if(!t.receivesFrom.includes(id))t.receivesFrom.push(id);}
+  else t.receivesFrom=t.receivesFrom.filter(x=>x!==id);
+  const row=document.getElementById('rxr-'+id);if(row)row.classList.toggle('on',chk);
+  save(); renderSidebar(); renderCtxPanel(t);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GENERATE SUMMARY
+// ─────────────────────────────────────────────────────────────────────────────
+async function genSummary(){
+  const t=getTh();if(!t)return;
+  if(!t.messages.length){alert('No conversation to summarize yet.');return;}
+  const key=document.getElementById('api-key').value.trim();if(!key){alert('Enter your API key first.');return;}
+  const btn=document.getElementById('btn-gen-sum');const st=document.getElementById('gen-st');
+  btn.disabled=true;st.textContent='Generating…';
+  const convo=t.messages.map(m=>`${m.role==='user'?'User':'AI'}: ${m.content}`).join('\n\n');
+  const prompt=`Summarize the key information, decisions, facts, characters, and lore from this writing session. Be concise — this will be injected as background context into other AI writing threads. Focus on what another thread needs to know to stay consistent.\n\n---\n${convo}\n---\n\nWrite a clear, dense summary (3–6 sentences):`;
+  try{
+    const provider=document.getElementById('provider-sel').value;
+    const model=document.getElementById('model-sel').value;
+    let result='';
+    if(provider==='anthropic'){
+      const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model,max_tokens:400,messages:[{role:'user',content:prompt}]})});
+      const d=await r.json();result=d.content?.map(b=>b.text||'').join('')||'';
+    } else {
+      const r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${key}`},body:JSON.stringify({model,messages:[{role:'user',content:prompt}],max_tokens:400})});
+      const d=await r.json();result=d.choices?.[0]?.message?.content||'';
+    }
+    t.broadcastSummary=result.trim();t.broadcast.summary=true;
+    document.getElementById('bc-sum').checked=true;
+    save();renderSumPreview(t);renderCtxPanel(t);
+    st.textContent='✓ Done';setTimeout(()=>st.textContent='',3000);
+  }catch(e){st.textContent='⚠ '+e.message;}
+  finally{btn.disabled=false;}
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MESSAGING
+// ─────────────────────────────────────────────────────────────────────────────
+function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}}
+function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,150)+'px';}
+
+async function sendMsg(){
+  if(S.generating)return;
+  const t=getTh();if(!t)return alert('Select a thread first.');
+  const inp=document.getElementById('msg-input');const text=inp.value.trim();if(!text)return;
+  const time=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  // In freeform mode: add as a user note, no AI response
+  if(S.inputMode==='freeform'){
+    t.messages.push({role:'user',content:text,time,freeform:true});
+    inp.value='';inp.style.height='auto';
+    save();renderMsgs();renderSidebar();
+    return;
+  }
+  const key=document.getElementById('api-key').value.trim();if(!key)return alert('Please enter your API key.');
+  t.messages.push({role:'user',content:text,time});
+  inp.value='';inp.style.height='auto';
+  save();renderMsgs();
+  S.generating=true;document.getElementById('btn-send').disabled=true;addThink();
+  try{const reply=await callLLM(t,key);t.messages.push({role:'assistant',content:reply,time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})});save();}
+  catch(e){t.messages.push({role:'assistant',content:'⚠ Error: '+e.message,time:''});save();}
+  finally{S.generating=false;document.getElementById('btn-send').disabled=false;renderMsgs();renderSidebar();}
+}
+
+function addThink(){
+  const a=document.getElementById('msgs');
+  const el=document.createElement('div');el.className='msg assistant';el.id='think-msg';
+  el.innerHTML='<div class="av">✦</div><div class="mb"><div class="bub think-bub"><div class="dots"><span></span><span></span><span></span></div> Thinking…</div></div>';
+  a.appendChild(el);a.scrollTop=a.scrollHeight;
+}
+
+async function callLLM(t,key){
+  const provider=document.getElementById('provider-sel').value;
+  const model=document.getElementById('model-sel').value;
+  const sys=buildSystemPromptWithOverrides(t);
+  const msgs=t.messages.filter(m=>m.role==='user'||m.role==='assistant').map(m=>({role:m.role,content:m.content}));
+  if(provider==='anthropic'){
+    const body={model,max_tokens:1500,messages:msgs};if(sys)body.system=sys;
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify(body)});
+    if(!r.ok){const e=await r.json();throw new Error(e.error?.message||r.statusText);}
+    const d=await r.json();return d.content.map(b=>b.text||'').join('');
+  } else {
+    const ms=[];if(sys)ms.push({role:'system',content:sys});ms.push(...msgs);
+    const url=provider==='openai'?'https://api.openai.com/v1/chat/completions':'http://localhost:11434/v1/chat/completions';
+    const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${key}`},body:JSON.stringify({model,messages:ms,max_tokens:1500})});
+    if(!r.ok){const e=await r.json();throw new Error(e.error?.message||r.statusText);}
+    const d=await r.json();return d.choices[0].message.content;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FLOW MAP  — interactive cards + free-drag positioning
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Per-project visual positions (visual only, doesn't affect thread order)
+const flowPositions = {}; // { projId: { threadId: {x,y} } }
+
+function getFlowPos(pid, tid, defaultX, defaultY){
+  if(!flowPositions[pid]) flowPositions[pid]={};
+  if(!flowPositions[pid][tid]) flowPositions[pid][tid]={x:defaultX,y:defaultY};
+  return flowPositions[pid][tid];
+}
+
+function renderFlowMap(){
+  const sel=document.getElementById('flow-proj-sel');
+  sel.innerHTML=S.projects.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('');
+  if(S.activeProj) sel.value=S.activeProj;
+  const pid=sel.value;
+  const p=S.projects.find(x=>x.id===pid);
+  const canvas=document.getElementById('flow-canvas');
+  const svg=document.getElementById('flow-svg');
+  canvas.innerHTML='';
+  svg.innerHTML=`<defs><marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="rgba(58,90,122,0.55)"/></marker></defs>`;
+  if(!p||!p.threads.length){canvas.innerHTML=`<div style="padding:40px;font-family:'Crimson Pro',serif;font-size:15px;color:var(--muted);font-style:italic;">No threads in this project yet.</div>`;return;}
+
+  const threads=p.threads;
+  const NODE_W=240, COL_GAP=80, ROW_GAP=50;
+  const COLS=3;
+
+  // Assign default grid positions for threads that don't have visual positions yet
+  threads.forEach((t,i)=>{
+    ensure(t);
+    const col=i%COLS; const row=Math.floor(i/COLS);
+    const defX=30+col*(NODE_W+COL_GAP);
+    const defY=30+row*(180+ROW_GAP);
+    getFlowPos(pid,t.id,defX,defY);
+  });
+
+  // Large canvas
+  canvas.style.width='2000px'; canvas.style.height='1600px';
+  svg.setAttribute('width','2000'); svg.setAttribute('height','1600');
+
+  // Draw nodes
+  threads.forEach((t,i)=>{
+    ensure(t);
+    const bc=t.broadcast.sys||t.broadcast.notes||t.broadcast.summary;
+    const pos=getFlowPos(pid,t.id,0,0);
+    const div=document.createElement('div');
+    div.className='fn'+(t.id===S.activeTh?' fn-active':'');
+    div.id='fn-'+t.id;
+    div.style.left=pos.x+'px'; div.style.top=pos.y+'px'; div.style.width=NODE_W+'px';
+
+    // Build receives-from checkboxes (all other threads in project)
+    const otherThreads=threads.filter(x=>x.id!==t.id);
+    const rxChecks=otherThreads.map(ot=>{
+      ensure(ot);
+      const chk=t.receivesFrom.includes(ot.id);
+      return `<div class="fn-rx-row">
+        <input type="checkbox" id="fnrx-${t.id}-${ot.id}" ${chk?'checked':''}
+          onchange="flowToggleRx('${pid}','${t.id}','${ot.id}',this.checked)" onclick="event.stopPropagation()">
+        <label for="fnrx-${t.id}-${ot.id}" onclick="event.stopPropagation()">${TICO[ot.type]||'📄'} ${esc(ot.name)}</label>
+      </div>`;
+    }).join('');
+
+    div.innerHTML=`
+      <div class="fn-head" id="fn-head-${t.id}">
+        <span class="fn-drag-handle" title="Drag to reposition">⠿⠿</span>
+        <span class="fn-order" style="background:${gradientColor(i, threads.length)}">${i+1}</span>
+        <span class="fn-ico">${TICO[t.type]||'📄'}</span>
+        <span class="fn-nm">${esc(t.name)}</span>
+        <button class="fn-toggle" onclick="toggleFnSections('${t.id}',event)" title="Expand/collapse">▾</button>
+      </div>
+      <div class="fn-body">
+        <div class="fn-type">${TYPE_LABELS[t.type]||t.type}</div>
+        <div class="fn-msgs">${t.messages.length} msg${t.messages.length!==1?'s':''}</div>
+        <button class="fn-open" onclick="openFromFlow('${p.id}','${t.id}')" style="margin-top:5px;">Open Thread →</button>
+      </div>
+      <div class="fn-sections-wrap" id="fns-${t.id}">
+        <div class="fn-section">
+          <div class="fn-section-title green">📡 Broadcasts</div>
+          <div class="fn-bc-pills">
+            <span class="fn-pill${t.broadcast.sys?' on-bc':''}" onclick="flowToggleBc('${pid}','${t.id}','sys',event)" title="Broadcast system prompt">Sys Prompt</span>
+            <span class="fn-pill${t.broadcast.notes?' on-bc':''}" onclick="flowToggleBc('${pid}','${t.id}','notes',event)" title="Broadcast pinned notes">Notes</span>
+            <span class="fn-pill${t.broadcast.summary?' on-bc':''}" onclick="flowToggleBc('${pid}','${t.id}','summary',event)" title="Broadcast AI summary">Summary</span>
+          </div>
+        </div>
+        <div class="fn-section">
+          <div class="fn-section-title blue">📥 Receives From</div>
+          ${otherThreads.length?`<div class="fn-rx-list">${rxChecks}</div>`:'<div style="font-family:\'Crimson Pro\',serif;font-size:12px;color:var(--muted);font-style:italic;">No other threads yet.</div>'}
+        </div>
+      </div>`;
+    canvas.appendChild(div);
+
+    // Free-drag on canvas
+    attachNodeDrag(div, pid, t.id);
+  });
+
+  // Draw arrows after layout
+  requestAnimationFrame(()=>drawFlowArrows(pid, threads));
+}
+
+function toggleFnSections(tid, e){
+  e.stopPropagation();
+  const wrap=document.getElementById('fns-'+tid);
+  const btn=e.currentTarget;
+  const open=wrap.classList.toggle('open');
+  btn.textContent=open?'▴':'▾';
+  // Redraw arrows since card height changed
+  const sel=document.getElementById('flow-proj-sel');
+  const pid=sel.value;
+  const p=S.projects.find(x=>x.id===pid);
+  if(p) setTimeout(()=>drawFlowArrows(pid,p.threads),260);
+}
+
+function drawFlowArrows(pid, threads){
+  const svg=document.getElementById('flow-svg');
+  // Remove old paths (keep defs)
+  Array.from(svg.querySelectorAll('path')).forEach(el=>el.remove());
+  threads.forEach(t=>{
+    ensure(t);
+    if(!t.receivesFrom) return;
+    t.receivesFrom.forEach(srcId=>{
+      const srcEl=document.getElementById('fn-'+srcId);
+      const dstEl=document.getElementById('fn-'+t.id);
+      if(!srcEl||!dstEl) return;
+      const sx=parseInt(srcEl.style.left)+srcEl.offsetWidth/2;
+      const sy=parseInt(srcEl.style.top)+srcEl.offsetHeight/2;
+      const dx=parseInt(dstEl.style.left)+dstEl.offsetWidth/2;
+      const dy=parseInt(dstEl.style.top)+dstEl.offsetHeight/2;
+      const cpx=(sx+dx)/2;
+      const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+      path.setAttribute('d',`M${sx},${sy} C${cpx},${sy} ${cpx},${dy} ${dx},${dy}`);
+      path.setAttribute('stroke','rgba(58,90,122,0.45)');
+      path.setAttribute('stroke-width','2');
+      path.setAttribute('fill','none');
+      path.setAttribute('marker-end','url(#arrowhead)');
+      path.setAttribute('stroke-dasharray','5,3');
+      svg.appendChild(path);
+    });
+  });
+}
+
+function attachNodeDrag(el, pid, tid){
+  const handle=el.querySelector('.fn-drag-handle');
+  let dragging=false, ox=0, oy=0, startX=0, startY=0;
+
+  handle.addEventListener('mousedown',e=>{
+    e.preventDefault(); e.stopPropagation();
+    dragging=true;
+    ox=parseInt(el.style.left)||0;
+    oy=parseInt(el.style.top)||0;
+    startX=e.clientX; startY=e.clientY;
+    el.classList.add('fn-dragging');
+    el.style.zIndex=999;
+  });
+  document.addEventListener('mousemove',e=>{
+    if(!dragging) return;
+    const nx=ox+(e.clientX-startX);
+    const ny=oy+(e.clientY-startY);
+    el.style.left=Math.max(0,nx)+'px';
+    el.style.top=Math.max(0,ny)+'px';
+    flowPositions[pid][tid]={x:Math.max(0,nx),y:Math.max(0,ny)};
+    // Redraw arrows live
+    const p=S.projects.find(x=>x.id===pid);
+    if(p) drawFlowArrows(pid,p.threads);
+  });
+  document.addEventListener('mouseup',()=>{
+    if(!dragging) return;
+    dragging=false;
+    el.classList.remove('fn-dragging');
+    el.style.zIndex='';
+  });
+}
+
+// Toggle broadcast from flow card
+function flowToggleBc(pid, tid, key, e){
+  e.stopPropagation();
+  const p=S.projects.find(x=>x.id===pid); if(!p) return;
+  const t=p.threads.find(x=>x.id===tid); if(!t) return;
+  ensure(t);
+  t.broadcast[key]=!t.broadcast[key];
+  save(); renderSidebar();
+  // Update pill UI
+  const pill=e.currentTarget;
+  pill.classList.toggle('on-bc', t.broadcast[key]);
+  // Redraw arrows
+  const p2=S.projects.find(x=>x.id===pid);
+  if(p2) drawFlowArrows(pid,p2.threads);
+  // Sync chat panel if this is the active thread
+  if(S.activeTh===tid){
+    document.getElementById('bc-sys').checked=t.broadcast.sys;
+    document.getElementById('bc-notes').checked=t.broadcast.notes;
+    document.getElementById('bc-sum').checked=t.broadcast.summary;
+    const th=getTh(); if(th) renderCtxPanel(th);
+  }
+}
+
+// Toggle receive from flow card
+function flowToggleRx(pid, myTid, srcTid, checked){
+  const p=S.projects.find(x=>x.id===pid); if(!p) return;
+  const t=p.threads.find(x=>x.id===myTid); if(!t) return;
+  ensure(t);
+  if(checked){if(!t.receivesFrom.includes(srcTid))t.receivesFrom.push(srcTid);}
+  else t.receivesFrom=t.receivesFrom.filter(x=>x!==srcTid);
+  save(); renderSidebar();
+  drawFlowArrows(pid, p.threads);
+  // Sync chat panel
+  if(S.activeTh===myTid){const th=getTh();if(th){renderRxList(th);renderCtxPanel(th);}}
+}
+
+function openFromFlow(pid,tid){
+  S.activeProj=pid;S.activeTh=tid;S.openPanel=null;
+  switchView('chat');render();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PROJECT / THREAD OPS
+// ─────────────────────────────────────────────────────────────────────────────
+function toggleProj(id){S.activeProj=S.activeProj===id?null:id;if(S.activeProj!==id)S.activeTh=null;S.openPanel=null;render();}
+function selTh(pid,tid){S.activeProj=pid;S.activeTh=tid;S.openPanel=null;if(S.curView!=='chat')switchView('chat');render();}
+function renderIconPicker(){document.getElementById('icon-row').innerHTML=ICONS.map(i=>`<span class="icon-opt${i===S.newProjIcon?' sel':''}" onclick="selIcon('${i}')">${i}</span>`).join('');}
+function renderColorPicker(){document.getElementById('color-row').innerHTML=COLORS.map(c=>`<span class="color-opt${c===S.newProjColor?' sel':''}" style="background:${c}" onclick="selColor('${c}')"></span>`).join('');}
+function selIcon(i){S.newProjIcon=i;renderIconPicker();}
+function selColor(c){S.newProjColor=c;renderColorPicker();}
+function openNewProj(){S.newProjIcon='📚';S.newProjColor=COLORS[0];renderIconPicker();renderColorPicker();document.getElementById('proj-nm-inp').value='';document.getElementById('proj-modal').style.display='flex';setTimeout(()=>document.getElementById('proj-nm-inp').focus(),50);}
+function createProj(){const n=document.getElementById('proj-nm-inp').value.trim();if(!n)return document.getElementById('proj-nm-inp').focus();const p={id:uid(),name:n,icon:S.newProjIcon,color:S.newProjColor,threads:[]};S.projects.push(p);S.activeProj=p.id;S.activeTh=null;save();closeModal('proj-modal');render();}
+function openNewTh(pid){S.pendingProj=pid;document.getElementById('th-nm-inp').value='';document.getElementById('th-type').value='overview';document.getElementById('th-sys-inp').value='';clearImport('modal');document.getElementById('th-modal').style.display='flex';setTimeout(()=>document.getElementById('th-nm-inp').focus(),50);}
+function createThread(){
+  const n=document.getElementById('th-nm-inp').value.trim();if(!n)return document.getElementById('th-nm-inp').focus();
+  const type=document.getElementById('th-type').value;
+  const sys=document.getElementById('th-sys-inp').value.trim();
+  const p=S.projects.find(x=>x.id===S.pendingProj);if(!p)return;
+  const t={id:uid(),name:n,type,systemPrompt:sys,messages:[],broadcast:{sys:false,notes:false,summary:false},broadcastNotes:'',broadcastSummary:'',receivesFrom:[]};
+  // Seed with imported content if present
+  const {text,fname}=importState.modal;
+  if(text){
+    const time=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+    t.messages.push({role:'user',content:'[Imported from "'+fname+'"]\n\n'+text,time,freeform:true});
+    clearImport('modal');
+  }
+  p.threads.push(t);S.activeProj=p.id;S.activeTh=t.id;save();closeModal('th-modal');render();
+}
+function clearThread(){const t=getTh();if(!t)return;if(!confirm('Clear all messages?'))return;t.messages=[];save();renderMsgs();}
+function delThread(){if(!confirm('Delete this thread?'))return;const p=getProj();if(!p)return;p.threads=p.threads.filter(t=>t.id!==S.activeTh);S.activeTh=null;save();render();}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// IMPORT — file reading for .txt, .md, .rtf, .docx
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Load mammoth.js lazily for docx support
+let mammothLoaded = false;
+function loadMammoth(){
+  if(mammothLoaded) return Promise.resolve();
+  return new Promise((res,rej)=>{
+    const s=document.createElement('script');
+    s.src='https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js';
+    s.onload=()=>{mammothLoaded=true;res();};
+    s.onerror=()=>rej(new Error('Failed to load mammoth.js'));
+    document.head.appendChild(s);
+  });
+}
+
+// Pending imported text (keyed by 'thread' or 'modal')
+const importState = { thread:{ text:'', fname:'' }, modal:{ text:'', fname:'' } };
+let threadImportMode = 'message'; // 'message' | 'context'
+
+async function extractTextFromFile(file){
+  const ext=file.name.split('.').pop().toLowerCase();
+  if(ext==='docx'||ext==='doc'){
+    await loadMammoth();
+    const buf=await file.arrayBuffer();
+    const result=await mammoth.extractRawText({arrayBuffer:buf});
+    return result.value||'';
+  }
+  // txt, md, rtf — read as text (rtf will have markup but still readable)
+  return new Promise((res,rej)=>{
+    const r=new FileReader();
+    r.onload=e=>{
+      let text=e.target.result||'';
+      // Strip basic RTF markup if rtf
+      if(ext==='rtf') text=text.replace(/\{[^{}]*\}|\\[a-z]+\d*\s?|[\\{}]/g,' ').replace(/\s+/g,' ').trim();
+      res(text);
+    };
+    r.onerror=()=>rej(new Error('Could not read file'));
+    r.readAsText(file);
+  });
+}
+
+function showImportPreview(key, fname, text){
+  importState[key]={text, fname};
+  const preview=document.getElementById(key+'-import-preview');
+  const fnameEl=document.getElementById(key+'-import-fname');
+  const textEl=document.getElementById(key+'-import-preview-text');
+  if(!preview) return;
+  preview.style.display='block';
+  fnameEl.textContent=fname+' ('+Math.round(text.length/1000)+'k chars)';
+  textEl.textContent=text.slice(0,400)+(text.length>400?'…':'');
+  if(key==='thread'){
+    const btn=document.getElementById('btn-do-import');
+    if(btn) btn.disabled=false;
+  }
+}
+
+function clearImport(key){
+  importState[key]={text:'',fname:''};
+  const preview=document.getElementById(key+'-import-preview');
+  if(preview) preview.style.display='none';
+  const inp=document.getElementById(key==='thread'?'thread-file-inp':'modal-file-inp');
+  if(inp) inp.value='';
+  if(key==='thread'){
+    const btn=document.getElementById('btn-do-import');
+    if(btn) btn.disabled=true;
+  }
+}
+function clearThreadImport(){clearImport('thread');}
+function clearModalImport(){clearImport('modal');}
+
+async function handleThreadFileSelect(e){
+  const file=e.target.files[0]; if(!file) return;
+  try{
+    const text=await extractTextFromFile(file);
+    showImportPreview('thread', file.name, text);
+  }catch(err){alert('Could not read file: '+err.message);}
+}
+
+async function handleModalFileSelect(e){
+  const file=e.target.files[0]; if(!file) return;
+  try{
+    const text=await extractTextFromFile(file);
+    showImportPreview('modal', file.name, text);
+  }catch(err){alert('Could not read file: '+err.message);}
+}
+
+// Drag and drop helpers
+function dzDragOver(e, zoneId){
+  e.preventDefault(); e.stopPropagation();
+  document.getElementById(zoneId)?.classList.add('drag-active');
+}
+function dzDragLeave(zoneId){
+  document.getElementById(zoneId)?.classList.remove('drag-active');
+}
+async function dzDrop(e, key){
+  e.preventDefault(); e.stopPropagation();
+  const zoneId=(key==='thread'?'thread':'modal')+'-drop-zone';
+  document.getElementById(zoneId)?.classList.remove('drag-active');
+  const file=e.dataTransfer?.files[0]; if(!file) return;
+  try{
+    const text=await extractTextFromFile(file);
+    showImportPreview(key, file.name, text);
+  }catch(err){alert('Could not read file: '+err.message);}
+}
+
+function selImportMode(el){
+  document.querySelectorAll('.import-mode-pill').forEach(x=>x.classList.remove('sel'));
+  el.classList.add('sel');
+  threadImportMode=el.dataset.mode;
+}
+
+function openImportPanel(){
+  // Toggle — close other panels
+  const isOpen=document.getElementById('panel-import').classList.contains('open');
+  ['bc','rx','sys'].forEach(n=>{
+    document.getElementById('panel-'+n).classList.remove('open');
+    document.getElementById('btn-'+n).classList.remove('on');
+  });
+  S.openPanel=null;
+  document.getElementById('panel-import').classList.toggle('open',!isOpen);
+}
+
+function doThreadImport(){
+  const {text,fname}=importState.thread;
+  if(!text) return;
+  const t=getTh(); if(!t) return;
+  const time=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  if(threadImportMode==='context'){
+    // Append to pinned notes
+    ensure(t);
+    const prefix=t.broadcastNotes?t.broadcastNotes+'\n\n':'';
+    t.broadcastNotes=prefix+'[Imported from '+fname+']\n'+text;
+    document.getElementById('bc-notes-txt').value=t.broadcastNotes;
+    t.broadcast.notes=true;
+    document.getElementById('bc-notes').checked=true;
+    save(); renderSidebar();
+    // Show feedback
+    const btn=document.getElementById('btn-do-import');
+    btn.textContent='✓ Added to pinned notes';
+    setTimeout(()=>{btn.textContent='↓ Insert into thread';},2500);
+  } else {
+    // Insert as a user message (freeform-style so no AI reply)
+    t.messages.push({role:'user', content:'[Imported from "'+fname+'"]\n\n'+text, time, freeform:true});
+    save(); renderMsgs(); renderSidebar();
+    // Close panel
+    document.getElementById('panel-import').classList.remove('open');
+    clearImport('thread');
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PROJECT DELETE (with confirm modal)
+// ─────────────────────────────────────────────────────────────────────────────
+function promptDelProj(e, pid){
+  e.stopPropagation();
+  const p=S.projects.find(x=>x.id===pid);if(!p)return;
+  S.pendingDelProj=pid;
+  document.getElementById('del-proj-msg').textContent=`Delete "${p.name}"? This will permanently erase all ${p.threads.length} thread${p.threads.length!==1?'s':''} and all messages inside.`;
+  document.getElementById('del-proj-modal').style.display='flex';
+}
+function confirmDelProj(){
+  if(!S.pendingDelProj)return;
+  S.projects=S.projects.filter(p=>p.id!==S.pendingDelProj);
+  if(S.activeProj===S.pendingDelProj){S.activeProj=null;S.activeTh=null;}
+  S.pendingDelProj=null;
+  save();closeModal('del-proj-modal');render();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CRITIQUE
+// ─────────────────────────────────────────────────────────────────────────────
+let critSelectedScope=null;
+
+function renderCritiqueScopes(){
+  const grid=document.getElementById('crit-scope-grid');
+  const scopes=[];
+  scopes.push({id:'everything',ico:'🌐',nm:'Everything',desc:'All threads & characters'});
+  scopes.push({id:'characters',ico:'👥',nm:'Characters',desc:'Select which characters'});
+  scopes.push({id:'worldbuilding',ico:'🌍',nm:'World Building',desc:'All world/lore threads'});
+  // Per-project scopes
+  for(const p of S.projects){
+    scopes.push({id:'proj:'+p.id,ico:p.icon,nm:p.name,desc:`All ${p.threads.length} thread${p.threads.length!==1?'s':''}`});
+    for(const t of p.threads){
+      ensure(t);
+      // Skip character folder threads — handled by the Characters card
+      if(t.type==='characters') continue;
+      scopes.push({id:'th:'+t.id,ico:TICO[t.type]||'📄',nm:t.name,desc:TYPE_LABELS[t.type]||t.type});
+    }
+  }
+  if(!critSelectedScope&&scopes.length) critSelectedScope=scopes[0].id;
+  grid.innerHTML=scopes.map(s=>`
+    <div class="crit-scope-card${s.id===critSelectedScope?' selected':''}" onclick="selCritScope('${s.id}')">
+      <div class="cs-ico">${s.ico}</div>
+      <div class="cs-nm">${esc(s.nm)}</div>
+      <div class="cs-desc">${esc(s.desc)}</div>
+    </div>`).join('');
+  // Show/hide character picker
+  updateCharPicker();
+}
+
+function selCritScope(id){
+  critSelectedScope=id;
+  document.querySelectorAll('.crit-scope-card').forEach(el=>{
+    el.classList.toggle('selected', el.getAttribute('onclick')===`selCritScope('${id}')`);
+  });
+  updateCharPicker();
+}
+
+function updateCharPicker(){
+  const wrap=document.getElementById('char-picker-wrap');
+  const list=document.getElementById('char-picker-list');
+  if(critSelectedScope!=='characters'){wrap.classList.remove('open');return;}
+  wrap.classList.add('open');
+  // Gather all characters across all projects
+  const allChars=[];
+  for(const p of S.projects)
+    for(const t of p.threads)
+      if(t.type==='characters'&&t.characters)
+        t.characters.forEach(c=>allChars.push({c,t,p}));
+  if(!allChars.length){
+    list.innerHTML='<div style="font-family:\'Crimson Pro\',serif;font-size:13px;color:var(--muted);font-style:italic;">No characters created yet.</div>';
+    return;
+  }
+  list.innerHTML=allChars.map(({c,t,p})=>`
+    <div class="char-picker-row">
+      <input type="checkbox" id="cpc-${c.id}" value="${c.id}" checked onchange="critCharToggleAll(null)">
+      <label for="cpc-${c.id}">
+        ${c.icon||'👤'} ${esc(c.name||'Unnamed')}
+        ${c.profile?.role?`<span class="cp-role">${esc(c.profile.role)}</span>`:''}
+      </label>
+    </div>`).join('');
+  // Sync "all" checkbox
+  syncCritAllCheck();
+}
+
+function critCharToggleAll(allBox){
+  if(allBox){
+    // All checkbox changed — set all individual boxes to match
+    document.querySelectorAll('#char-picker-list input[type=checkbox]')
+      .forEach(x=>x.checked=allBox.checked);
+  } else {
+    syncCritAllCheck();
+  }
+}
+
+function syncCritAllCheck(){
+  const all=document.getElementById('cp-all'); if(!all) return;
+  const boxes=[...document.querySelectorAll('#char-picker-list input[type=checkbox]')];
+  all.checked=boxes.length>0&&boxes.every(b=>b.checked);
+  all.indeterminate=boxes.some(b=>b.checked)&&!boxes.every(b=>b.checked);
+}
+
+function getSelectedCharIds(){
+  return [...document.querySelectorAll('#char-picker-list input[type=checkbox]:checked')].map(x=>x.value);
+}
+
+function buildCritiquePrompt(){
+  const contents=[];
+  if(!critSelectedScope) return null;
+
+  const gatherChar=(c)=>{
+    if(!c.messages||!c.messages.length) return;
+    const cv=c.messages.filter(m=>m.role==='user'||m.role==='assistant').map(m=>`${m.role==='user'?'Author':'AI'}: ${m.content}`).join('\n\n');
+    contents.push(`\n\n### Character: "${c.name}"\n${cv}`);
+    if(c.profile){
+      const pf=c.profile;
+      const summary=[pf.role,pf.traits&&pf.traits.join(', '),pf.motivation,pf.arc].filter(Boolean).join(' | ');
+      if(summary) contents.push(`[Profile for ${c.name}]: ${summary}`);
+    }
+  };
+
+  const gatherThread=(t)=>{
+    ensure(t);
+    if(t.type==='characters') return; // handled separately
+    if(!t.messages.length) return;
+    const conv=t.messages.filter(m=>m.role==='user'||m.role==='assistant')
+      .map(m=>`${m.role==='user'?'Author':'AI Assistant'}: ${m.content}`).join('\n\n');
+    contents.push(`\n\n### Thread: "${t.name}" (${TYPE_LABELS[t.type]||t.type})\n${conv}`);
+    if(t.broadcastNotes) contents.push(`[Pinned Notes for "${t.name}"]: ${t.broadcastNotes}`);
+    if(t.broadcastSummary) contents.push(`[Summary for "${t.name}"]: ${t.broadcastSummary}`);
+  };
+
+  if(critSelectedScope==='everything'){
+    for(const p of S.projects) for(const t of p.threads){
+      gatherThread(t);
+      if(t.type==='characters'&&t.characters) t.characters.forEach(gatherChar);
+    }
+  } else if(critSelectedScope==='characters'){
+    const selectedIds=getSelectedCharIds();
+    for(const p of S.projects) for(const t of p.threads)
+      if(t.type==='characters'&&t.characters)
+        t.characters.filter(c=>selectedIds.includes(c.id)).forEach(gatherChar);
+  } else if(critSelectedScope==='worldbuilding'){
+    for(const p of S.projects) for(const t of p.threads) if(t.type==='worldbuilding') gatherThread(t);
+  } else if(critSelectedScope.startsWith('proj:')){
+    const pid=critSelectedScope.slice(5);
+    const p=S.projects.find(x=>x.id===pid);
+    if(p) for(const t of p.threads){
+      gatherThread(t);
+      if(t.type==='characters'&&t.characters) t.characters.forEach(gatherChar);
+    }
+  } else if(critSelectedScope.startsWith('th:')){
+    const tid=critSelectedScope.slice(3);
+    const t=findTh(tid); if(t) gatherThread(t);
+  }
+
+  if(!contents.length) return null;
+
+  const focuses=[...document.querySelectorAll('#crit-focus-checks input:checked')].map(x=>x.value);
+  const tone=document.querySelector('.crit-tone-pill.sel')?.dataset?.tone||'balanced';
+  const extra=document.getElementById('crit-extra').value.trim();
+  const toneDesc={balanced:'balanced and honest',encouraging:'encouraging and supportive while noting areas for growth',rigorous:'rigorous and challenging, like a demanding writing workshop',reader:'from the perspective of an engaged reader',editor:'like a professional copy/developmental editor',sales:'through the lens of commercial viability — hooks, genre fit, audience appeal, and what would make an agent or publisher take notice'};
+
+  return `You are a skilled literary critic and writing coach. Provide a ${toneDesc[tone]||'balanced'} critique of the following writing material.
+
+Focus your critique on: ${focuses.join(', ')}.${extra?'\n\nAdditional instructions: '+extra:''}
+
+Organize your response with clear sections for each focus area. Be specific and reference actual content from the material. Include both strengths and areas for improvement. End with a brief overall assessment.
+
+---WRITING MATERIAL---
+${contents.join('\n\n')}
+---END OF MATERIAL---
+
+Now provide your critique:`;
+}
+
+async function runCritique(){
+  const key=document.getElementById('api-key').value.trim();
+  if(!key){alert('Enter your API key in the header first.');return;}
+  const prompt=buildCritiquePrompt();
+  if(!prompt){alert('No content found for the selected scope. Make sure threads have messages.');return;}
+
+  const btn=document.getElementById('btn-run-crit');
+  const out=document.getElementById('crit-output');
+  const lbl=document.getElementById('crit-output-label');
+  btn.disabled=true;
+  out.innerHTML='<div class="crit-thinking"><div class="dots"><span></span><span></span><span></span></div> Analyzing your work…</div>';
+  lbl.textContent='Running critique…';
+
+  try{
+    const provider=document.getElementById('provider-sel').value;
+    const model=document.getElementById('model-sel').value;
+    let result='';
+    if(provider==='anthropic'){
+      const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model,max_tokens:2000,messages:[{role:'user',content:prompt}]})});
+      const d=await r.json();result=d.content?.map(b=>b.text||'').join('')||'';
+    } else {
+      const r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${key}`},body:JSON.stringify({model,messages:[{role:'user',content:prompt}],max_tokens:2000})});
+      const d=await r.json();result=d.choices?.[0]?.message?.content||'';
+    }
+    out.innerHTML=fmt(result);
+    lbl.textContent='Critique complete';
+  }catch(e){
+    out.innerHTML=`<p style="color:var(--ember)">⚠ Error: ${esc(e.message)}</p>`;
+    lbl.textContent='Error';
+  }finally{btn.disabled=false;}
+}
+
+function copyCritique(){
+  const out=document.getElementById('crit-output');
+  navigator.clipboard.writeText(out.innerText).then(()=>{
+    const btn=document.querySelector('.btn-copy-crit');
+    btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',2000);
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PROVIDER
+// ─────────────────────────────────────────────────────────────────────────────
+function onProviderChange(){
+  const p=document.getElementById('provider-sel').value;
+  const sel=document.getElementById('model-sel');const ki=document.getElementById('api-key');
+  if(p==='anthropic'){sel.innerHTML=`<option value="claude-sonnet-4-20250514">claude-sonnet-4</option><option value="claude-opus-4-5">claude-opus-4</option><option value="claude-haiku-4-5-20251001">claude-haiku-4</option>`;ki.placeholder='sk-ant-…';}
+  else if(p==='openai'){sel.innerHTML=`<option value="gpt-4o">gpt-4o</option><option value="gpt-4o-mini">gpt-4o-mini</option><option value="gpt-4-turbo">gpt-4-turbo</option>`;ki.placeholder='sk-…';}
+  else{sel.innerHTML=`<option value="llama3">llama3</option><option value="mistral">mistral</option><option value="custom">custom</option>`;ki.placeholder='API key or leave blank';}
+  updateBadge();
+}
+document.getElementById('model-sel').addEventListener('change',updateBadge);
+function updateBadge(){document.getElementById('m-badge').textContent=document.getElementById('model-sel').value.split('-').slice(0,2).join('-');}
+function toggleKey(){const i=document.getElementById('api-key');i.type=i.type==='password'?'text':'password';}
+function toggleSettings(){
+  const panel=document.getElementById('settings-panel');
+  const gear=document.getElementById('settings-gear');
+  const open=panel.classList.toggle('open');
+  gear.classList.toggle('open',open);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// RENDER
+// ─────────────────────────────────────────────────────────────────────────────
+function render(){renderSidebar();renderThreadView();}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GRADIENT ORDER BADGE  (teal-green → burnt orange across n steps)
+// ─────────────────────────────────────────────────────────────────────────────
+function gradientColor(index, total){
+  // index: 0-based position, total: total thread count in project
+  // Start: teal-green #4a8a70, End: burnt orange #b85c2a
+  const t = total <= 1 ? 0 : index / (total - 1);
+  const r = Math.round(0x4a + (0xb8 - 0x4a) * t);
+  const g = Math.round(0x8a + (0x5c - 0x8a) * t);
+  const b = Math.round(0x70 + (0x2a - 0x70) * t);
+  return `rgb(${r},${g},${b})`;
+}
+
+function toggleSidebar(){
+  const sb=document.getElementById('sidebar');
+  const tab=document.getElementById('sb-tab');
+  const collapsed=sb.classList.toggle('collapsed');
+  tab.style.display=collapsed?'flex':'none';
+}
+
+let ctxCollapsed=false;
+function toggleCtxCollapse(){
+  ctxCollapsed=!ctxCollapsed;
+  document.getElementById('ctx-sources-wrap').classList.toggle('collapsed',ctxCollapsed);
+  document.getElementById('ctx-chev').classList.toggle('collapsed',ctxCollapsed);
+}
+
+document.querySelectorAll('.modal-ov').forEach(el=>el.addEventListener('click',e=>{if(e.target===el)el.style.display='none';}));
+document.getElementById('proj-nm-inp').addEventListener('keydown',e=>{if(e.key==='Enter')createProj();});
+document.getElementById('th-nm-inp').addEventListener('keydown',e=>{if(e.key==='Enter')createThread();});
+document.getElementById('char-nm-inp').addEventListener('keydown',e=>{if(e.key==='Enter')createCharacter();});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// BOOT
+// ─────────────────────────────────────────────────────────────────────────────
+load(); onProviderChange(); render();
+
+if(!S.projects.length){
+  const i1=uid(),i2=uid(),i3=uid(),i4=uid(),i5=uid();
+  S.projects.push({
+    id:uid(),name:'My Novel Series',icon:'📚',color:'#b8860b',
+    threads:[
+      {id:i1,name:'Series Overview',type:'overview',
+       systemPrompt:'You are helping develop the overall arc and concept for a novel series. Keep responses focused on big-picture themes and series-level ideas.',
+       messages:[],broadcast:{sys:true,notes:false,summary:false},broadcastNotes:'',broadcastSummary:'',receivesFrom:[]},
+      {id:i2,name:'Characters',type:'characters',
+       systemPrompt:'You are a character development assistant. Help build rich, complex characters with backstory, motivation, and arcs.',
+       messages:[],broadcast:{sys:false,notes:true,summary:false},
+       broadcastNotes:'(Add character names & key traits here once established)',
+       broadcastSummary:'',receivesFrom:[i1]},
+      {id:i3,name:'World Building',type:'worldbuilding',
+       systemPrompt:'You are a world-building assistant. Focus on setting, lore, history, magic systems, and culture.',
+       messages:[],broadcast:{sys:false,notes:true,summary:false},
+       broadcastNotes:'The world is called Eldenmoor. Magic flows through ley lines beneath ancient cities. The ruling Conclave has outlawed wild magic for 300 years.',
+       broadcastSummary:'',receivesFrom:[i1]},
+      {id:i4,name:'Book 1 — Outline',type:'plot',
+       systemPrompt:'You are helping outline Book 1. Focus only on plot structure and chapter breakdown of the first book.',
+       messages:[],broadcast:{sys:false,notes:false,summary:true},broadcastNotes:'',broadcastSummary:'',receivesFrom:[i1,i2,i3]},
+      {id:i5,name:'Book 2 — Outline',type:'plot',
+       systemPrompt:'You are helping outline Book 2. Reference events from Book 1 as established canon.',
+       messages:[],broadcast:{sys:false,notes:false,summary:false},broadcastNotes:'',broadcastSummary:'',receivesFrom:[i1,i2,i3,i4]},
+    ]
+  });
+  S.activeProj=S.projects[0].id;
+  saveLocal(); render();
+}
+
+// Show Drive overlay if never connected and not dismissed this session
+setTimeout(()=>{
+  const dismissed = sessionStorage.getItem('drive_dismissed');
+  const hadFile   = driveState.fileId;
+  if(!hadFile && !dismissed){
+    document.getElementById('drive-overlay').style.display='flex';
+  }
+  // If they were previously connected, silently try to reconnect via silent token request
+  if(hadFile){
+    try{
+      const client = google.accounts.oauth2.initTokenClient({
+        client_id: CLIENT_ID,
+        scope: SCOPES,
+        prompt: '', // silent — no popup
+        callback: async (resp)=>{
+          if(resp.error) return; // not signed in, stay local
+          driveState.token     = resp.access_token;
+          driveState.connected = true;
+          await driveLoad();
+          setSyncStatus('saved','Synced ✓');
+          render();
+        }
+      });
+      client.requestAccessToken({prompt:''});
+    } catch(e){ /* GIS not loaded yet, ignore */ }
+  }
+}, 800);
+</script>
+</body>
+</html>
