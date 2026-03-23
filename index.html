@@ -52,6 +52,9 @@ header h1 span{color:var(--ghost-light);font-style:normal;font-weight:600;}
 .key-eye:hover{color:var(--ghost-light);}
 .settings-close{background:none;border:1px solid #2a2a38;color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.08em;padding:3px 8px;border-radius:3px;cursor:pointer;margin-left:auto;white-space:nowrap;transition:all .15s;}
 .settings-close:hover{border-color:var(--ember);color:var(--ember);}
+.settings-save{background:var(--ghost);border:none;color:var(--ink);font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.08em;padding:4px 10px;border-radius:3px;cursor:pointer;white-space:nowrap;transition:background .15s;font-weight:600;}
+.settings-save:hover{background:var(--ghost-light);}
+.settings-key-status{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--teal);white-space:nowrap;transition:opacity .3s;}
 
 /* ── WORKSPACE LAYOUT ── */
 .workspace{display:flex;flex:1;overflow:hidden;}
@@ -664,8 +667,10 @@ aside.collapsed{width:0;border-right:none;}
     <span class="settings-label">Model</span>
     <select id="model-sel"></select>
     <span class="settings-label">API Key</span>
-    <input type="password" id="api-key" placeholder="sk-ant-…"/>
+    <input type="password" id="api-key" placeholder="sk-ant-…" onkeydown="if(event.key==='Enter')saveApiKey()"/>
     <button class="key-eye" onclick="toggleKey()">👁</button>
+    <button class="settings-save" id="settings-save" onclick="saveApiKey()">Save</button>
+    <span class="settings-key-status" id="settings-key-status"></span>
     <button class="settings-close" onclick="toggleSettings()">✕ Close</button>
   </div>
 </div>
@@ -3453,7 +3458,41 @@ document.getElementById('char-nm-inp').addEventListener('keydown',e=>{if(e.key==
 // ─────────────────────────────────────────────────────────────────────────────
 // BOOT
 // ─────────────────────────────────────────────────────────────────────────────
+function saveApiKey(){
+  const key = document.getElementById('api-key').value.trim();
+  const status = document.getElementById('settings-key-status');
+  if (!key) {
+    status.textContent = '⚠ No key entered';
+    status.style.color = 'var(--ember)';
+    setTimeout(() => status.textContent = '', 2000);
+    return;
+  }
+  try { localStorage.setItem('gw_api_key', key); } catch(e) {}
+  status.textContent = '✓ Key saved';
+  status.style.color = 'var(--teal)';
+  setTimeout(() => status.textContent = '', 2500);
+  renderUsageBar();
+}
+
 load(); onProviderChange(); render();
+
+// Restore saved API key and provider
+try {
+  const savedKey = localStorage.getItem('gw_api_key');
+  const savedProvider = localStorage.getItem('gw_provider');
+  if (savedProvider) { document.getElementById('provider-sel').value = savedProvider; onProviderChange(); }
+  if (savedKey) {
+    document.getElementById('api-key').value = savedKey;
+    // Show that a key is already set
+    const status = document.getElementById('settings-key-status');
+    if (status) { status.textContent = '✓ Key loaded'; status.style.color = 'var(--teal)'; setTimeout(() => status.textContent = '', 3000); }
+  }
+} catch(e) {}
+
+// Save provider whenever it changes
+document.getElementById('provider-sel').addEventListener('change', () => {
+  try { localStorage.setItem('gw_provider', document.getElementById('provider-sel').value); } catch(e) {}
+});
 
 if(!S.projects.length){
   const i1=uid(),i2=uid(),i3=uid(),i4=uid(),i5=uid();
