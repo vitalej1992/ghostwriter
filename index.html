@@ -64,7 +64,7 @@ aside{width:var(--sw);background:var(--ink-light);display:flex;flex-direction:co
 aside.collapsed{width:0;border-right:none;}
 .btn-sb-toggle{background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:3px 5px;border-radius:3px;transition:color .15s,background .15s;line-height:1;flex-shrink:0;}
 .btn-sb-toggle:hover{color:var(--ghost-light);background:rgba(155,143,170,.08);}
-.sb-collapse-tab{position:absolute;left:0;top:50%;transform:translateY(-50%);width:18px;height:48px;background:var(--ink-light);border:1px solid #252530;border-left:none;border-radius:0 4px 4px 0;display:none;align-items:center;justify-content:center;cursor:pointer;z-index:10;transition:background .15s;}
+.sb-collapse-tab{position:absolute;left:0;top:calc(50% - 30px);width:16px;height:46px;background:var(--ink-light);border:1px solid #252530;border-left:none;border-radius:0 4px 4px 0;display:none;align-items:center;justify-content:center;cursor:pointer;z-index:10;transition:background .15s;}
 .sb-collapse-tab:hover{background:#252535;}
 .sb-collapse-tab span{font-size:10px;color:var(--muted);}
 .sb-head{padding:12px 14px 10px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #252530;flex-shrink:0;}
@@ -83,7 +83,8 @@ aside.collapsed{width:0;border-right:none;}
 .proj-ico{width:18px;height:18px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;}
 .proj-chev{font-size:8px;color:var(--muted);transition:transform .2s;flex-shrink:0;}
 .proj-chev.open{transform:rotate(90deg);}
-.proj-nm{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:500;letter-spacing:.04em;color:var(--surface);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.proj-nm{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:500;letter-spacing:.04em;color:var(--surface);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;}
+.sb-rename-inp{font-family:'JetBrains Mono',monospace;font-size:11px;background:#13131a;border:1px solid var(--ghost);border-radius:3px;color:var(--ghost-pale);padding:1px 5px;flex:1;outline:none;min-width:0;}
 .thread-list{padding:0 0 4px;}
 /* project delete button */
 .proj-del{background:none;border:none;color:transparent;font-size:10px;cursor:pointer;padding:2px 4px;border-radius:2px;transition:color .15s,background .15s;flex-shrink:0;line-height:1;}
@@ -103,12 +104,13 @@ aside.collapsed{width:0;border-right:none;}
 .ti:hover .ti-drag{opacity:1;color:#5a5a70;}
 .ti-drag:active{cursor:grabbing;}
 .ti-ico{font-size:11px;flex-shrink:0;}
-.ti-nm{font-family:'JetBrains Mono',monospace;font-size:11px;color:#a0a0c0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.ti-order{font-family:'JetBrains Mono',monospace;font-size:9px;color:#5a5a78;flex-shrink:0;min-width:14px;text-align:right;}
-.ti-badges{display:flex;gap:2px;flex-shrink:0;}
-.b-bc{font-size:7px;background:rgba(90,138,138,.3);color:var(--teal-light);padding:1px 3px;border-radius:5px;font-family:'JetBrains Mono',monospace;}
-.b-rx{font-size:7px;background:rgba(106,90,138,.3);color:var(--ghost-light);padding:1px 3px;border-radius:5px;font-family:'JetBrains Mono',monospace;}
-.ti-cnt{font-family:'JetBrains Mono',monospace;font-size:9px;color:#4a4a60;background:#13131a;padding:1px 4px;border-radius:7px;flex-shrink:0;}
+.ti-nm{font-family:'JetBrains Mono',monospace;font-size:11px;color:#a0a0c0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;}
+.ti-order{font-family:'JetBrains Mono',monospace;font-size:9px;color:#5a5a78;flex-shrink:0;width:18px;text-align:right;}
+.ti-badges{display:flex;gap:2px;flex-shrink:0;width:42px;justify-content:flex-end;}
+.b-bc{font-size:7px;background:rgba(90,138,138,.3);color:var(--teal-light);padding:1px 3px;border-radius:5px;font-family:'JetBrains Mono',monospace;display:inline-block;width:18px;text-align:center;}
+.b-ph{display:inline-block;width:18px;}
+.b-rx{font-size:7px;background:rgba(106,90,138,.3);color:var(--ghost-light);padding:1px 3px;border-radius:5px;font-family:'JetBrains Mono',monospace;display:inline-block;width:16px;text-align:center;}
+.ti-cnt{font-family:'JetBrains Mono',monospace;font-size:9px;color:#4a4a60;background:#13131a;padding:1px 4px;border-radius:7px;flex-shrink:0;min-width:28px;text-align:center;}
 .ti.active .ti-cnt{background:rgba(155,143,170,.2);color:var(--ghost-light);}
 .btn-add-th{display:flex;align-items:center;gap:5px;padding:4px 10px 4px 34px;background:none;border:none;color:#5a5a78;font-family:'JetBrains Mono',monospace;font-size:10px;cursor:pointer;width:100%;text-align:left;transition:color .15s;letter-spacing:.04em;}
 .btn-add-th:hover{color:var(--ghost-light);}
@@ -118,7 +120,9 @@ aside.collapsed{width:0;border-right:none;}
 .ti-chars-folder.active{background:rgba(155,143,170,.15);}
 .ti-chars-folder .ti-nm{color:#a0a0c0;}
 .ti-chars-folder.active .ti-nm{color:var(--ghost-pale);}
-.ti-chars-chev{font-size:8px;color:#5a5a78;transition:transform .2s;flex-shrink:0;}
+.ti-chars-chev-wrap{display:inline-flex;align-items:center;justify-content:center;min-width:28px;text-align:center;}
+.ti-chars-chev{font-size:10px;color:#7a7a90;transition:transform .2s;padding:2px 4px;cursor:pointer;border-radius:3px;}
+.ti-chars-chev:hover{color:var(--ghost-light);background:rgba(155,143,170,.1);}
 .ti-chars-chev.open{transform:rotate(90deg);}
 /* character sub-row */
 .char-sub-list{padding:0;}
@@ -139,7 +143,7 @@ aside.collapsed{width:0;border-right:none;}
 #char-view{flex:1;display:none;flex-direction:row;overflow:hidden;position:relative;}
 .char-profile{width:280px;flex-shrink:0;border-right:1px solid var(--surface-deep);display:flex;flex-direction:column;overflow:hidden;background:var(--surface-dark);transition:width .22s ease;}
 .char-profile.prof-collapsed{width:0;border-right:none;overflow:hidden;}
-.prof-collapse-btn{position:absolute;left:280px;top:50%;transform:translateY(-50%);width:14px;height:44px;background:var(--surface-dark);border:1px solid var(--surface-deep);border-left:none;border-radius:0 4px 4px 0;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:6;transition:left .22s ease,background .15s;font-size:10px;color:var(--muted);}
+.prof-collapse-btn{position:absolute;left:280px;top:calc(50% + 20px);width:16px;height:46px;background:var(--surface-dark);border:1px solid var(--surface-deep);border-left:none;border-radius:0 4px 4px 0;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:6;transition:left .22s ease,background .15s;font-size:10px;color:var(--muted);}
 .prof-collapse-btn:hover{background:var(--surface-deep);color:var(--ghost);}
 .char-profile-header{padding:14px 14px 12px;border-bottom:1px solid var(--surface-deep);flex-shrink:0;display:flex;align-items:flex-start;gap:10px;}
 .char-avatar-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0;}
@@ -177,6 +181,8 @@ aside.collapsed{width:0;border-right:none;}
 .btn-gen-profile{background:none;border:1px solid rgba(155,143,170,.4);color:var(--ghost);font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.08em;padding:5px 10px;border-radius:3px;cursor:pointer;transition:all .15s;width:100%;}
 .btn-gen-profile:hover{background:rgba(155,143,170,.08);}
 .btn-gen-profile:disabled{opacity:.4;cursor:not-allowed;}
+.btn-delete-char{background:none;border:1px solid rgba(184,92,42,.3);color:var(--ember);font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.08em;padding:5px 10px;border-radius:3px;cursor:pointer;transition:all .15s;width:100%;}
+.btn-delete-char:hover{background:rgba(184,92,42,.08);border-color:var(--ember);}
 .char-bc-row{display:flex;align-items:center;gap:7px;}
 .char-bc-row label{font-family:'Crimson Pro',serif;font-size:12px;color:var(--muted);cursor:pointer;}
 .char-bc-row input{accent-color:var(--bc);cursor:pointer;}
@@ -203,11 +209,11 @@ aside.collapsed{width:0;border-right:none;}
 .char-card:hover .char-pin-btn,.char-card.pinned .char-pin-btn{opacity:1;}
 .char-pin-btn.active{background:var(--ghost);color:white;}
 /* gear settings button */
-.char-gear-btn{position:absolute;top:6px;right:6px;background:rgba(255,255,255,.85);border:none;border-radius:50%;width:22px;height:22px;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s;z-index:3;}
+.char-gear-btn{position:absolute;top:6px;right:6px;background:rgba(255,255,255,.9);border:none;border-radius:50%;width:24px;height:24px;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s;z-index:10;}
 .char-card:hover .char-gear-btn{opacity:1;}
 .char-gear-btn:hover{background:white;color:var(--ghost);}
 /* gear dropdown */
-.char-gear-menu{position:absolute;top:32px;right:6px;background:white;border:1px solid var(--surface-deep);border-radius:5px;box-shadow:0 4px 14px rgba(0,0,0,.12);z-index:20;display:none;flex-direction:column;min-width:150px;overflow:hidden;}
+.char-gear-menu{position:absolute;top:34px;right:6px;background:white;border:1px solid var(--surface-deep);border-radius:5px;box-shadow:0 4px 18px rgba(0,0,0,.18);z-index:30;display:none;flex-direction:column;min-width:150px;overflow:hidden;}
 .char-gear-menu.open{display:flex;}
 .char-gear-item{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-light);padding:8px 12px;cursor:pointer;transition:background .1s;white-space:nowrap;border:none;background:none;text-align:left;width:100%;}
 .char-gear-item:hover{background:var(--surface-dark);color:var(--ghost);}
@@ -246,6 +252,100 @@ aside.collapsed{width:0;border-right:none;}
 .import-mode-pill{font-family:'JetBrains Mono',monospace;font-size:8px;padding:3px 9px;border-radius:12px;border:1px solid var(--surface-deep);background:white;color:var(--muted);cursor:pointer;transition:all .15s;text-transform:uppercase;letter-spacing:.07em;}
 .import-mode-pill:hover{border-color:var(--teal);color:var(--teal);}
 .import-mode-pill.sel{border-color:var(--teal);background:rgba(90,138,138,.1);color:var(--teal);}
+/* ── WRITE TAB ── */
+#view-write{flex:1;display:none;flex-direction:row;overflow:hidden;background:var(--surface);}
+/* Doc list panel */
+.write-doc-list{width:260px;flex-shrink:0;background:var(--ink-light);border-right:1px solid #252530;display:flex;flex-direction:column;overflow:hidden;transition:width .22s ease;}
+.write-doc-list.collapsed{width:0;border-right:none;overflow:hidden;}
+.write-doc-list-head{padding:10px 14px 9px;border-bottom:1px solid #252530;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;}
+.write-doc-list-head span{font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--ghost-light);}
+.write-doc-collapse-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:2px 4px;border-radius:3px;transition:color .15s;line-height:1;}
+.write-doc-collapse-btn:hover{color:var(--ghost-light);}
+.write-doc-expand-tab{position:absolute;left:0;top:50%;transform:translateY(-50%);width:14px;height:44px;background:var(--ink-light);border:1px solid #252530;border-left:none;border-radius:0 4px 4px 0;display:none;align-items:center;justify-content:center;cursor:pointer;z-index:6;font-size:10px;color:var(--muted);transition:background .15s;}
+.write-doc-expand-tab:hover{background:#252535;color:var(--ghost-light);}
+.write-doc-items{flex:1;overflow-y:auto;padding:8px 0;}
+.write-doc-items::-webkit-scrollbar{width:3px;}
+.write-doc-items::-webkit-scrollbar-thumb{background:#2a2a38;border-radius:2px;}
+.write-doc-group{margin-bottom:4px;}
+.write-doc-proj-label{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);padding:8px 14px 4px;opacity:.6;}
+.write-doc-item{display:flex;align-items:center;padding:7px 14px;cursor:pointer;gap:8px;transition:background .1s;}
+.write-doc-item:hover{background:rgba(155,143,170,.06);}
+.write-doc-item.active{background:rgba(155,143,170,.14);}
+.write-doc-item .wdi-ico{font-size:13px;flex-shrink:0;}
+.write-doc-item .wdi-info{flex:1;min-width:0;}
+.write-doc-item .wdi-name{font-family:'JetBrains Mono',monospace;font-size:11px;color:#a0a0c0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.write-doc-item.active .wdi-name{color:var(--ghost-pale);}
+.write-doc-item .wdi-meta{font-family:'JetBrains Mono',monospace;font-size:8px;color:#3a3a50;margin-top:1px;}
+.write-doc-empty{padding:20px 14px;font-family:'Crimson Pro',serif;font-size:13px;color:#3a3a50;font-style:italic;line-height:1.6;}
+/* Editor area */
+.write-editor-wrap{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--surface);}
+.write-toolbar-wrap{flex-shrink:0;background:var(--surface-dark);border-bottom:1px solid var(--surface-deep);}
+.write-toolbar-toggle{display:flex;align-items:center;gap:6px;padding:4px 12px;cursor:pointer;user-select:none;border-bottom:1px solid transparent;}
+.write-toolbar-toggle:hover{background:rgba(155,143,170,.04);}
+.write-toolbar-toggle span{font-family:'JetBrains Mono',monospace;font-size:8px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);flex:1;}
+.write-toolbar-toggle .wtb-chev{font-size:9px;color:var(--muted);transition:transform .2s;}
+.write-toolbar-toggle .wtb-chev.open{transform:rotate(180deg);}
+.write-toolbar{display:flex;align-items:center;gap:2px;padding:5px 12px;flex-wrap:wrap;overflow:hidden;max-height:0;transition:max-height .2s ease;}
+.write-toolbar.open{max-height:80px;border-top:1px solid var(--surface-deep);}
+.wt-btn{background:none;border:1px solid transparent;color:var(--muted);font-size:13px;width:28px;height:26px;border-radius:3px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .12s;font-family:'Crimson Pro',serif;font-weight:600;}
+.wt-btn:hover{background:var(--surface-deep);color:var(--ink);border-color:var(--surface-deep);}
+.wt-btn.active{background:rgba(155,143,170,.15);border-color:rgba(155,143,170,.3);color:var(--ghost);}
+.wt-sep{width:1px;height:18px;background:var(--surface-deep);margin:0 4px;flex-shrink:0;}
+.wt-select{font-family:'JetBrains Mono',monospace;font-size:9px;background:var(--surface-dark);border:1px solid var(--surface-deep);color:var(--muted);padding:2px 6px;border-radius:3px;outline:none;cursor:pointer;}
+.wt-wordcount{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--muted);margin-left:auto;text-transform:uppercase;letter-spacing:.08em;flex-shrink:0;cursor:default;}
+.write-save-status{font-family:'JetBrains Mono',monospace;font-size:8px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);padding:0 8px;flex-shrink:0;}
+.write-save-status.saved{color:var(--teal);}
+.write-save-status.saving{color:var(--ghost);}
+/* The actual editor */
+.write-editor-scroll{flex:1;overflow-y:auto;display:flex;justify-content:center;padding:40px 20px;}
+.write-editor.double-spaced{line-height:2.8;}
+.write-ai-sel-indicator{display:none;align-items:center;gap:6px;padding:4px 14px;background:rgba(155,143,170,.08);border-bottom:1px solid rgba(155,143,170,.15);}
+.write-ai-sel-indicator.visible{display:flex;}
+.write-ai-sel-text{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--ghost);text-transform:uppercase;letter-spacing:.08em;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.write-ai-sel-clear{background:none;border:none;color:var(--muted);cursor:pointer;font-size:11px;padding:0 2px;transition:color .12s;}
+.write-ai-sel-clear:hover{color:var(--ember);}
+.write-editor-scroll::-webkit-scrollbar{width:6px;}
+.write-editor-scroll::-webkit-scrollbar-thumb{background:var(--surface-deep);border-radius:3px;}
+.write-editor{width:100%;max-width:720px;min-height:100%;font-family:'Crimson Pro',Georgia,serif;font-size:18px;line-height:1.85;color:var(--ink);outline:none;caret-color:var(--ghost);}
+.write-editor:empty::before{content:attr(data-placeholder);color:var(--muted);pointer-events:none;font-style:italic;}
+.write-editor h1{font-family:'Playfair Display',serif;font-size:28px;font-weight:600;margin:24px 0 12px;line-height:1.2;}
+.write-editor h2{font-family:'Playfair Display',serif;font-size:22px;font-weight:600;margin:20px 0 10px;line-height:1.25;}
+.write-editor h3{font-family:'Playfair Display',serif;font-size:18px;font-weight:600;margin:16px 0 8px;}
+.write-editor p{margin:0 0 12px;}
+.write-editor ul,.write-editor ol{margin:0 0 12px;padding-left:28px;}
+.write-editor li{margin-bottom:4px;}
+.write-no-doc{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--muted);text-align:center;padding:40px;}
+.write-no-doc .nd-ico{font-size:44px;opacity:.25;margin-bottom:16px;}
+.write-no-doc h3{font-family:'Playfair Display',serif;font-size:22px;font-style:italic;opacity:.4;margin-bottom:8px;color:var(--ink);}
+.write-no-doc p{font-size:14px;opacity:.4;max-width:280px;line-height:1.6;}
+/* Selection tooltip */
+/* tooltip removed — selection reflected in AI bar instead */
+/* AI Bar at bottom */
+.write-ai-bar{flex-shrink:0;border-top:2px solid var(--surface-deep);background:var(--surface-dark);}
+.write-ai-bar-header{display:flex;align-items:center;gap:8px;padding:8px 14px;cursor:pointer;user-select:none;}
+.write-ai-bar-header:hover{background:rgba(155,143,170,.04);}
+.write-ai-bar-label{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--ghost);flex:1;}
+.write-ai-bar-chev{font-size:10px;color:var(--muted);transition:transform .2s;}
+.write-ai-bar-chev.open{transform:rotate(180deg);}
+.write-ai-body{display:none;border-top:1px solid var(--surface-deep);}
+.write-ai-body.open{display:flex;flex-direction:column;}
+.write-ai-context{display:flex;align-items:center;gap:6px;padding:6px 14px;border-bottom:1px solid var(--surface-deep);flex-wrap:wrap;}
+.write-ai-ctx-label{font-family:'JetBrains Mono',monospace;font-size:8px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);flex-shrink:0;}
+.write-ai-ctx-pill{font-family:'JetBrains Mono',monospace;font-size:8px;padding:2px 8px;border-radius:10px;border:1px solid var(--surface-deep);background:var(--surface);color:var(--muted);cursor:pointer;transition:all .12s;text-transform:uppercase;letter-spacing:.06em;}
+.write-ai-ctx-pill.on{border-color:var(--ghost);background:rgba(155,143,170,.1);color:var(--ghost);}
+.write-ai-msgs{max-height:180px;overflow-y:auto;padding:8px 14px;display:flex;flex-direction:column;gap:6px;}
+.write-ai-msgs::-webkit-scrollbar{width:3px;}
+.write-ai-msgs::-webkit-scrollbar-thumb{background:var(--surface-deep);}
+.write-ai-msg{font-family:'Crimson Pro',serif;font-size:14px;line-height:1.55;padding:8px 10px;border-radius:6px;}
+.write-ai-msg.user{background:rgba(155,143,170,.08);color:var(--ink);align-self:flex-end;max-width:85%;border:1px solid rgba(155,143,170,.15);}
+.write-ai-msg.assistant{background:white;color:var(--ink);align-self:flex-start;max-width:85%;border:1px solid var(--surface-deep);}
+.write-ai-msg .wai-sel{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--ghost);border-left:2px solid var(--ghost);padding-left:6px;margin-bottom:4px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.write-ai-inp-row{display:flex;align-items:flex-end;padding:8px 14px;gap:8px;}
+.write-ai-inp{flex:1;font-family:'Crimson Pro',serif;font-size:14px;color:var(--ink);background:white;border:1px solid var(--surface-deep);border-radius:6px;padding:7px 10px;outline:none;resize:none;height:34px;max-height:80px;line-height:1.4;transition:border-color .15s;}
+.write-ai-inp:focus{border-color:var(--ghost);}
+.write-ai-send{width:34px;height:34px;background:var(--ghost);border:none;color:var(--ink);border-radius:6px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:background .15s;flex-shrink:0;}
+.write-ai-send:hover{background:var(--ghost-light);}
+.write-ai-send:disabled{background:#2a2a38;cursor:not-allowed;}
 /* ── GOOGLE DRIVE SYNC ── */
 .sync-bar{display:flex;align-items:center;gap:6px;margin-right:6px;}
 .sync-btn{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.08em;border:1px solid #2a2a38;background:none;color:var(--muted);padding:3px 9px;border-radius:3px;cursor:pointer;transition:all .15s;white-space:nowrap;}
@@ -450,7 +550,7 @@ aside{width:var(--sw);background:var(--ink-light);display:flex;flex-direction:co
 aside.collapsed{width:0;border-right:none;}
 .btn-sb-toggle{background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:3px 5px;border-radius:3px;transition:color .15s,background .15s;line-height:1;flex-shrink:0;}
 .btn-sb-toggle:hover{color:var(--ghost-pale);background:rgba(255,255,255,.06);}
-.sb-collapse-tab{position:absolute;left:0;top:50%;transform:translateY(-50%);width:18px;height:48px;background:var(--ink-light);border:1px solid #252530;border-left:none;border-radius:0 4px 4px 0;display:none;align-items:center;justify-content:center;cursor:pointer;z-index:10;transition:background .15s;}
+.sb-collapse-tab{position:absolute;left:0;top:calc(50% - 30px);width:16px;height:46px;background:var(--ink-light);border:1px solid #252530;border-left:none;border-radius:0 4px 4px 0;display:none;align-items:center;justify-content:center;cursor:pointer;z-index:10;transition:background .15s;}
 .sb-collapse-tab:hover{background:#2a2a38;}
 .sb-collapse-tab span{font-size:10px;color:var(--muted);}
 .workspace{display:flex;flex:1;overflow:hidden;position:relative;}
@@ -640,7 +740,8 @@ aside.collapsed{width:0;border-right:none;}
 <header>
   <h1>g<span>Host</span>Writer</h1>
   <div class="nav-tabs">
-    <button class="nav-tab active" id="tab-chat" onclick="switchView('chat')">✍ Write</button>
+    <button class="nav-tab active" id="tab-chat" onclick="switchView('chat')">✍ Develop</button>
+    <button class="nav-tab" id="tab-write" onclick="switchView('write')">📝 Write</button>
     <button class="nav-tab" id="tab-flow" onclick="switchView('flow')">🔀 Flow Map</button>
     <button class="nav-tab" id="tab-crit" onclick="switchView('critique')">🧐 Critique</button>
   </div>
@@ -935,6 +1036,7 @@ aside.collapsed{width:0;border-right:none;}
                 <input type="checkbox" id="char-bc-profile" onchange="saveCharBc()">
                 <label for="char-bc-profile">Broadcast this profile sheet to other threads</label>
               </div>
+              <button class="btn-delete-char" onclick="deleteActiveChar()">✕ Delete Character</button>
             </div>
           </div>
           <!-- Character chat -->
@@ -987,6 +1089,105 @@ aside.collapsed{width:0;border-right:none;}
       </div>
     </div>
 
+    <!-- WRITE TAB VIEW -->
+    <div id="view-write" style="display:none;">
+      <!-- Doc list sidebar -->
+      <div class="write-doc-list" id="write-doc-list" style="position:relative;">
+        <div class="write-doc-list-head">
+          <span>Documents</span>
+          <button class="write-doc-collapse-btn" onclick="toggleWriteDocList()" title="Collapse">◀</button>
+        </div>
+        <div class="write-doc-items" id="write-doc-items"></div>
+        <div class="write-doc-expand-tab" id="write-doc-expand-tab" onclick="toggleWriteDocList()" title="Expand">▶</div>
+      </div>
+      <!-- Editor area -->
+      <div class="write-editor-wrap" id="write-editor-wrap">
+        <!-- No doc selected state -->
+        <div class="write-no-doc" id="write-no-doc">
+          <div class="nd-ico">📝</div>
+          <h3>Select a document</h3>
+          <p>Choose a book or chapter from the list on the left to start writing.</p>
+        </div>
+        <!-- Editor (hidden until doc selected) -->
+        <div id="write-editor-area" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
+          <!-- Toolbar -->
+          <div class="write-toolbar-wrap">
+            <div class="write-toolbar-toggle" onclick="toggleWriteToolbar()">
+              <span>Formatting</span>
+              <span class="write-save-status" id="write-save-status"></span>
+              <span class="wtb-chev open" id="wtb-chev">▲</span>
+            </div>
+            <div class="write-toolbar open" id="write-toolbar">
+              <select class="wt-select" onchange="writeExecFormat('formatBlock',this.value);this.value='p'" title="Paragraph style">
+                <option value="p">Paragraph</option>
+                <option value="h1">Heading 1</option>
+                <option value="h2">Heading 2</option>
+                <option value="h3">Heading 3</option>
+              </select>
+              <select class="wt-select" id="wt-font" onchange="writeChangeFont(this.value)" title="Font">
+                <option value="'Crimson Pro',Georgia,serif">Crimson Pro</option>
+                <option value="'Playfair Display',serif">Playfair Display</option>
+                <option value="Georgia,serif">Georgia</option>
+                <option value="'Times New Roman',serif">Times New Roman</option>
+                <option value="Arial,sans-serif">Arial</option>
+                <option value="'JetBrains Mono',monospace">Monospace</option>
+              </select>
+              <div class="wt-sep"></div>
+              <button class="wt-btn" onclick="writeExecFormat('bold')" title="Bold (⌘B)"><b>B</b></button>
+              <button class="wt-btn" onclick="writeExecFormat('italic')" title="Italic (⌘I)"><i>I</i></button>
+              <button class="wt-btn" onclick="writeExecFormat('underline')" title="Underline (⌘U)"><u>U</u></button>
+              <div class="wt-sep"></div>
+              <button class="wt-btn" onclick="writeExecFormat('insertUnorderedList')" title="Bullet list">☰</button>
+              <button class="wt-btn" onclick="writeExecFormat('insertOrderedList')" title="Numbered list">①</button>
+              <div class="wt-sep"></div>
+              <button class="wt-btn" id="wt-spacing" onclick="toggleDoubleSpace()" title="Toggle double spacing">↕</button>
+              <div class="wt-sep"></div>
+              <button class="wt-btn" onclick="writeExecFormat('undo')" title="Undo">↩</button>
+              <button class="wt-btn" onclick="writeExecFormat('redo')" title="Redo">↪</button>
+              <span class="wt-wordcount" id="write-wordcount" style="margin-left:auto;">0 words</span>
+            </div>
+          </div>
+          <!-- The editor itself -->
+          <div class="write-editor-scroll">
+            <div
+              class="write-editor"
+              id="write-editor"
+              contenteditable="true"
+              data-placeholder="Begin writing here…"
+              oninput="onWriteInput()"
+              onkeyup="updateWriteToolbar()"
+              onmouseup="onWriteSelect()"
+              onkeydown="handleWriteKey(event)"
+            ></div>
+          </div>
+          <!-- AI Bar -->
+          <div class="write-ai-bar" id="write-ai-bar">
+            <div class="write-ai-bar-header" onclick="toggleWriteAI()">
+              <span class="write-ai-bar-label" id="write-ai-bar-label">✦ Ask AI</span>
+              <span class="write-ai-bar-chev" id="write-ai-chev">▲</span>
+            </div>
+            <div class="write-ai-body" id="write-ai-body">
+              <div class="write-ai-sel-indicator" id="write-ai-sel-indicator">
+                <span class="write-ai-sel-text" id="write-ai-sel-text"></span>
+                <button class="write-ai-sel-clear" onclick="clearWriteSel()" title="Clear selection">✕</button>
+              </div>
+              <div class="write-ai-context" id="write-ai-context">
+                <span class="write-ai-ctx-label">Context:</span>
+              </div>
+              <div class="write-ai-msgs" id="write-ai-msgs"></div>
+              <div class="write-ai-inp-row">
+                <textarea class="write-ai-inp" id="write-ai-inp"
+                  placeholder="Ask a question about your writing…"
+                  rows="1"
+                  onkeydown="writeAIKey(event)"
+                  oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,80)+'px'"></textarea>
+                <button class="write-ai-send" id="write-ai-send" onclick="sendWriteAI()">➤</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
     <!-- FLOW MAP VIEW -->
     <div id="view-flow">
       <div class="flow-header">
@@ -1107,6 +1308,30 @@ aside.collapsed{width:0;border-right:none;}
     </div>
   </div>
 </div>
+<div id="del-thread-modal" class="modal-ov" style="display:none">
+  <div class="modal confirm-modal">
+    <h2>Delete Thread?</h2>
+    <p>Delete "<span id="del-thread-name"></span>"? All messages and content inside will be permanently erased.</p>
+    <span class="warn">This cannot be undone.</span>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal('del-thread-modal')">Cancel — Keep It</button>
+      <button class="btn-confirm-del" onclick="confirmDelThread()">Yes, Delete Forever</button>
+    </div>
+  </div>
+</div>
+
+<div id="del-char-modal" class="modal-ov" style="display:none">
+  <div class="modal confirm-modal">
+    <h2>Delete Character?</h2>
+    <p id="del-char-msg">This will permanently delete this character and all their data.</p>
+    <span class="warn">This cannot be undone.</span>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal('del-char-modal')">Cancel — Keep Them</button>
+      <button class="btn-confirm-del" onclick="confirmDeleteChar()">Yes, Delete Forever</button>
+    </div>
+  </div>
+</div>
+
 <div id="del-proj-modal" class="modal-ov" style="display:none">
   <div class="modal confirm-modal">
     <h2>Delete Project?</h2>
@@ -1189,7 +1414,9 @@ const S = {
   newProjIcon:'📚', newProjColor:'#b8860b', pendingProj:null, openPanel:null,
   dragSrc:null, inputMode:'chat', pendingDelProj:null,
   charInputMode:'chat', charGenerating:false,
-  pendingCharParent:null, newCharIcon:'👤'
+  pendingCharParent:null, newCharIcon:'👤',
+  openCharFolders: new Set(), // thread IDs of manually-opened character folders
+  charFolderManualClose: new Set() // thread IDs explicitly closed by user
 };
 const ICONS=['📚','📖','✍️','🗡️','🌍','🏰','🐉','🌙','⚔️','🔮','🎭','🪄','🗺️','💀','👑','🌊','🔥','🌲','🌟','💎'];
 const COLORS=['#b8860b','#4a6741','#8b3a0f','#3a5a7a','#6a3a7a','#2a5a5a','#7a3a4a','#5a5a2a','#3a3a7a','#6a4a2a'];
@@ -1218,10 +1445,22 @@ function saveLocal(){
 }
 
 // ── Load from localStorage ────────────────────────────────────────────────
+function normalizeProjects(arr){
+  if(!Array.isArray(arr)) return [];
+  return arr
+    .filter(p=>p&&typeof p==='object')
+    .map(p=>{
+      if(!p.threads||!Array.isArray(p.threads)) p.threads=[];
+      p.threads = p.threads.filter(t=>t&&t.id&&t.type);
+      p.threads.forEach(t=>{ if(!t.name) t.name='Untitled'; ensure(t); });
+      return p;
+    });
+}
+
 function load(){
   try{
     const d = localStorage.getItem(LS_KEY);
-    if(d) S.projects = JSON.parse(d);
+    if(d) S.projects = normalizeProjects(JSON.parse(d));
   } catch(e){}
   // Restore drive creds if previously connected
   try{
@@ -1269,6 +1508,10 @@ function setSyncStatus(state, text){
 
 // ── Google Identity Services sign-in ─────────────────────────────────────
 function driveSignIn(){
+  if(typeof google==='undefined'){
+    alert('Google sign-in is still loading. Please wait a moment and try again.');
+    return;
+  }
   dismissDriveOverlay();
   setSyncStatus('connecting','Connecting…');
   const client = google.accounts.oauth2.initTokenClient({
@@ -1400,11 +1643,11 @@ function ensure(t){
 // ─────────────────────────────────────────────────────────────────────────────
 function getProj(){return S.projects.find(p=>p.id===S.activeProj)||null;}
 function getTh(){
-  const p=getProj();if(!p)return null;
+  const p=getProj();if(!p||!Array.isArray(p.threads))return null;
   return p.threads.find(t=>t.id===S.activeTh)||null;
 }
-function findTh(id){for(const p of S.projects){const t=p.threads.find(x=>x.id===id);if(t)return t;}return null;}
-function findProjForTh(id){for(const p of S.projects){if(p.threads.find(t=>t.id===id))return p;}return null;}
+function findTh(id){for(const p of S.projects){if(!Array.isArray(p.threads))continue;const t=p.threads.find(x=>x.id===id);if(t)return t;}return null;}
+function findProjForTh(id){for(const p of S.projects){if(!Array.isArray(p.threads))continue;if(p.threads.find(t=>t.id===id))return p;}return null;}
 function uid(){return Math.random().toString(36).slice(2,10)+Date.now().toString(36);}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function fmt(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>').replace(/\n\n/g,'</p><p>').replace(/\n/g,'<br>').replace(/^(.+)$/s,'<p>$1</p>');}
@@ -1414,7 +1657,7 @@ function closeModal(id){document.getElementById(id).style.display='none';}
 function thOrder(t){
   const p=findProjForTh(t.id);
   if(!p)return 0;
-  return p.threads.findIndex(x=>x.id===t.id);
+  return Array.isArray(p.threads)?p.threads.findIndex(x=>x.id===t.id):-1;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1556,14 +1799,26 @@ function setMode(m){
 function switchView(v){
   S.curView=v;
   document.getElementById('view-chat').style.display=v==='chat'?'flex':'none';
+  document.getElementById('view-write').style.display=v==='write'?'flex':'none';
   document.getElementById('view-flow').style.display=v==='flow'?'flex':'none';
   document.getElementById('view-critique').style.display=v==='critique'?'flex':'none';
   if(v!=='chat') document.getElementById('char-roster-view').style.display='none';
   document.getElementById('tab-chat').classList.toggle('active',v==='chat');
+  document.getElementById('tab-write').classList.toggle('active',v==='write');
   document.getElementById('tab-flow').classList.toggle('active',v==='flow');
   document.getElementById('tab-crit').classList.toggle('active',v==='critique');
   if(v==='flow') renderFlowMap();
   if(v==='critique') renderCritiqueScopes();
+  if(v==='write'){
+    // Collapse main sidebar when entering Write tab
+    const sb=document.getElementById('sidebar');
+    const tab=document.getElementById('sb-tab');
+    if(!sb.classList.contains('collapsed')){
+      sb.classList.add('collapsed');
+      if(tab) tab.style.display='flex';
+    }
+    renderWriteDocList();
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1571,37 +1826,44 @@ function switchView(v){
 // ─────────────────────────────────────────────────────────────────────────────
 function renderSidebar(){
   const el=document.getElementById('proj-list');
-  if(!S.projects.length){el.innerHTML=`<div style="padding:18px 14px;font-size:13px;color:#5a4a38;font-style:italic;line-height:1.6;">No projects yet.<br>Create one to begin.</div>`;return;}
-  el.innerHTML=S.projects.map(p=>{
+  // Filter out any malformed entries (meta objects, undefined names, etc.)
+  const displayProjects=S.projects.filter(p=>p&&p.id&&p.name&&!p.__meta__&&!p.__usage__&&Array.isArray(p.threads));
+  if(!displayProjects.length){el.innerHTML=`<div style="padding:18px 14px;font-size:13px;color:#5a4a38;font-style:italic;line-height:1.6;">No projects yet.<br>Create one to begin.</div>`;return;}
+  el.innerHTML=displayProjects.map(p=>{
     const open=p.id===S.activeProj;
+    // Filter bad threads too
+    const goodThreads=(Array.isArray(p.threads)?p.threads:[]).filter(t=>t&&t.id&&t.type);
     return `<div class="proj-group">
       <div class="proj-hdr${open?' open-proj':''}" onclick="toggleProj('${p.id}')">
         <span class="proj-ico" style="background:${p.color}22;color:${p.color}">${p.icon}</span>
-        <span class="proj-nm">${esc(p.name)}</span>
+        <span class="proj-nm" title="${esc(p.name)}" ondblclick="startRenameProjInline(event,'${p.id}')">${esc(p.name)}</span>
         <button class="proj-ren" onclick="startRenameProj(event,'${p.id}')" title="Rename project">✎</button>
         <button class="proj-del" onclick="promptDelProj(event,'${p.id}')" title="Delete project">✕</button>
         <span class="proj-chev${open?' open':''}">▶</span>
       </div>
-      ${open?`<div class="thread-list">${p.threads.map((t,i)=>{ensure(t);
+      ${open?`<div class="thread-list">${goodThreads.map((t,i)=>{ensure(t);
         const bc=t.broadcast.sys||t.broadcast.notes||t.broadcast.summary;
         const rx=t.receivesFrom&&t.receivesFrom.length>0;
         // Characters folder — special rendering
         if(t.type==='characters'){
-          const charsOpen=S.activeTh===t.id||t.characters.some(c=>c.id===S.activeTh);
+          const activeInside=S.activeTh===t.id||t.characters.some(c=>c.id===S.activeTh);
+          // Auto-open when first navigating inside, but respect manual close
+          if(activeInside && !S.charFolderManualClose.has(t.id)) S.openCharFolders.add(t.id);
+          const charsOpen=S.openCharFolders.has(t.id);
           return `<div class="ti-chars-folder${t.id===S.activeTh?' active':''}" onclick="selTh('${p.id}','${t.id}')">
             <span class="ti-drag" title="Drag to reorder">⠿</span>
             <span class="ti-ico">👥</span>
-            <span class="ti-nm">${esc(t.name)}</span>
+            <span class="ti-nm" title="${esc(t.name)}" ondblclick="startRenameThreadInline(event,'${p.id}','${t.id}')">${esc(t.name)}</span>
             <span class="ti-order">${i+1}</span>
-            <span class="ti-badges">${bc?'<span class="b-bc">BC</span>':''}${rx?'<span class="b-rx">RX</span>':''}</span>
-            <span class="ti-chars-chev${charsOpen?' open':''}">▶</span>
+            <span class="ti-badges">${bc?'<span class="b-bc">BC</span>':'<span class="b-ph"></span>'}${rx?'<span class="b-rx">RX</span>':'<span class="b-ph"></span>'}</span>
+            <span class="ti-cnt ti-chars-chev-wrap"><span class="ti-chars-chev${charsOpen?' open':''}" onclick="toggleCharFolder(event,'${t.id}')">▶</span></span>
           </div>
           ${charsOpen?`<div class="char-sub-list">
             ${t.characters.map(c=>`
               <div class="char-ti${c.id===S.activeTh?' active':''}" onclick="selChar('${p.id}','${t.id}','${c.id}')">
                 <span class="char-ti-drag">⠿</span>
                 <span class="char-ti-ico">${c.avatarImg?`<img src="${c.avatarImg}" style="width:14px;height:14px;border-radius:50%;object-fit:cover;vertical-align:middle;">`:c.icon||'👤'}</span>
-                <span class="char-ti-nm">${esc(c.name||'Unnamed')}</span>
+                <span class="char-ti-nm" title="${esc(c.name||'Unnamed')}" ondblclick="startRenameCharInline(event,'${p.id}','${t.id}','${c.id}')">${esc(c.name||'Unnamed')}</span>
                 <span class="char-ti-cnt">${c.messages.length}</span>
               </div>`).join('')}
             <button class="btn-add-char" onclick="openNewChar(event,'${p.id}','${t.id}')">＋ Add character</button>
@@ -1617,10 +1879,10 @@ function renderSidebar(){
           onclick="selTh('${p.id}','${t.id}')">
           <span class="ti-drag" title="Drag to reorder">⠿</span>
           <span class="ti-ico">${TICO[t.type]||'📄'}</span>
-          <span class="ti-nm">${esc(t.name)}</span>
+          <span class="ti-nm" title="${esc(t.name)}" ondblclick="startRenameThreadInline(event,'${p.id}','${t.id}')">${esc(t.name)}</span>
           <span class="ti-order">${i+1}</span>
-          <span class="ti-badges">${bc?'<span class="b-bc">BC</span>':''}${rx?'<span class="b-rx">RX</span>':''}</span>
-          <span class="ti-cnt">${t.messages.length}</span>
+          <span class="ti-badges">${bc?'<span class="b-bc">BC</span>':'<span class="b-ph"></span>'}${rx?'<span class="b-rx">RX</span>':'<span class="b-ph"></span>'}</span>
+          <span class="ti-cnt">${t.messages.length>999?Math.floor(t.messages.length/1000)+'k':t.messages.length}</span>
         </div>`;}).join('')}
         <button class="btn-add-th" onclick="openNewTh('${p.id}')">＋ Add thread</button>
       </div>`:''}
@@ -1670,6 +1932,8 @@ function renderThreadView(){
   const t=getTh();
   if(!t){tv.style.display='none';ns.style.display='flex';document.getElementById('ctx-panel').classList.remove('visible');return;}
   ensure(t); ns.style.display='none'; tv.style.display='flex';
+  // Restore all topbar buttons in case we're coming from a character view
+  ['bc','rx','sys'].forEach(n=>{ document.getElementById('btn-'+n).style.display=''; });
   // Characters folder — show roster view instead of chat
   if(t.type==='characters'){
     showChatOrChar('roster');
@@ -1679,7 +1943,7 @@ function renderThreadView(){
   // Normal thread — show chat
   showChatOrChar('chat');
   const p=getProj();
-  const ord=p?p.threads.findIndex(x=>x.id===t.id)+1:0;
+  const ord=p&&Array.isArray(p.threads)?p.threads.findIndex(x=>x.id===t.id)+1:0;
   document.getElementById('tb-ico').textContent=TICO[t.type]||'📄';
   document.getElementById('tb-nm').textContent=`${ord}. ${t.name}`;
   document.getElementById('tb-path').textContent=p?p.name:'';
@@ -1724,10 +1988,13 @@ function showChatOrChar(which){
     msgs.style.display='';
     if(inpArea) inpArea.style.display='';
     ctxPanel.style.display='';
+    rosterView.style.display='none';
+    charView.style.display='none';
   } else if(which==='char'){
     viewChat.style.display='flex';
     if(threadView) threadView.style.display='flex';
     charView.style.display='flex';
+    rosterView.style.display='none';
   } else if(which==='roster'){
     viewChat.style.display='none';
     rosterView.style.display='flex';
@@ -1762,7 +2029,19 @@ function findCharById(cid){
 
 function selChar(pid,tid,cid){
   S.activeProj=pid; S.activeTh=cid; S.openPanel=null;
-  if(S.curView!=='chat') switchView('chat');
+  // Always switch to chat/develop view to show character profile
+  if(S.curView!=='chat'){
+    S.curView='chat';
+    document.getElementById('view-chat').style.display='flex';
+    document.getElementById('view-write').style.display='none';
+    document.getElementById('view-flow').style.display='none';
+    document.getElementById('view-critique').style.display='none';
+    document.getElementById('char-roster-view').style.display='none';
+    document.getElementById('tab-chat').classList.add('active');
+    document.getElementById('tab-write').classList.remove('active');
+    document.getElementById('tab-flow').classList.remove('active');
+    document.getElementById('tab-crit').classList.remove('active');
+  }
   render();
 }
 
@@ -1839,6 +2118,7 @@ function rerenderRoster(){
 
     const card=document.createElement('div');
     card.className='char-card'+(c.pinned?' pinned':'');
+    card.onclick=(e)=>{ if(!e.target.closest('.char-gear-btn,.char-gear-menu,.char-pin-btn')) selChar(''+proj.id,''+thread.id,''+c.id); };
     card.dataset.cid=c.id;
 
     const portrait=c.avatarImg
@@ -1849,21 +2129,21 @@ function rerenderRoster(){
       <div class="char-card-portrait">
         ${portrait}
         <button class="char-pin-btn${c.pinned?' active':''}" title="${c.pinned?'Unpin':'Pin to top'}" onclick="rosterPin(event,'${c.id}')">${c.pinned?'📌':'📍'}</button>
-        <button class="char-gear-btn" title="Options" onclick="toggleGearMenu(event,'gear-${c.id}')">⚙</button>
-        <div class="char-gear-menu" id="gear-${c.id}">
-          <button class="char-gear-item" onclick="rosterUploadImg(event,'${c.id}')">🖼 Change Portrait</button>
-          <button class="char-gear-item" onclick="rosterMoveUp(event,'${c.id}')">↑ Move Up</button>
-          <button class="char-gear-item" onclick="rosterMoveDown(event,'${c.id}')">↓ Move Down</button>
-          <button class="char-gear-item danger" onclick="rosterDelete(event,'${proj.id}','${thread.id}','${c.id}')">✕ Delete</button>
-        </div>
-        <input type="file" id="card-img-${c.id}" accept="image/*" style="display:none" onchange="rosterImgLoaded(event,'${c.id}')">
       </div>
-      <div class="char-card-body" onclick="selChar('${proj.id}','${thread.id}','${c.id}')">
+      <div class="char-card-body">
         <div class="char-card-name">${esc(c.name||'Unnamed')}</div>
         <div class="char-card-role">${esc(pf.role||'—')}</div>
         <div class="char-card-traits">${traits.map(tr=>`<span class="char-card-trait">${esc(tr)}</span>`).join('')}</div>
         <div class="char-card-msgs">${c.messages.length} msg${c.messages.length!==1?'s':''}</div>
-      </div>`;
+      </div>
+      <button class="char-gear-btn" title="Options" onclick="toggleGearMenu(event,'gear-${c.id}')">⚙</button>
+      <div class="char-gear-menu" id="gear-${c.id}">
+        <button class="char-gear-item" onclick="rosterUploadImg(event,'${c.id}')">🖼 Change Portrait</button>
+        <button class="char-gear-item" onclick="rosterMoveUp(event,'${c.id}')">↑ Move Up</button>
+        <button class="char-gear-item" onclick="rosterMoveDown(event,'${c.id}')">↓ Move Down</button>
+        <button class="char-gear-item danger" onclick="promptDeleteChar(event,'${proj.id}','${thread.id}','${c.id}')">✕ Delete</button>
+      </div>
+      <input type="file" id="card-img-${c.id}" accept="image/*" style="display:none" onchange="rosterImgLoaded(event,'${c.id}')">`;
     grid.appendChild(card);
   });
 
@@ -1910,13 +2190,38 @@ function rosterMoveDown(e, cid){
   thread.characters.splice(idx+1,0,item);
   save(); rerenderRoster();
 }
-function rosterDelete(e, pid, tid, cid){
-  e.stopPropagation(); closeAllGearMenus();
-  if(!confirm('Delete this character?')) return;
+let pendingDeleteChar = null; // { pid, tid, cid }
+
+function deleteActiveChar(){
+  const d=getActiveChar(); if(!d) return;
+  promptDeleteChar(null, d.proj.id, d.thread.id, d.char.id);
+}
+
+function promptDeleteChar(e, pid, tid, cid){
+  if(e) { e.stopPropagation(); closeAllGearMenus(); }
+  const p=S.projects.find(x=>x.id===pid); if(!p) return;
+  const t=p.threads.find(x=>x.id===tid); if(!t) return;
+  const c=t.characters?.find(x=>x.id===cid); if(!c) return;
+  pendingDeleteChar={pid,tid,cid};
+  document.getElementById('del-char-msg').textContent=`Delete "${c.name||'this character'}"? All their messages and profile data will be permanently erased.`;
+  document.getElementById('del-char-modal').style.display='flex';
+}
+
+function confirmDeleteChar(){
+  closeModal('del-char-modal');
+  if(!pendingDeleteChar) return;
+  const {pid,tid,cid}=pendingDeleteChar;
+  pendingDeleteChar=null;
   const p=S.projects.find(x=>x.id===pid); if(!p) return;
   const t=p.threads.find(x=>x.id===tid); if(!t) return;
   t.characters=t.characters.filter(x=>x.id!==cid);
-  save(); renderSidebar(); rerenderRoster();
+  // If we were viewing this char, go back to the characters thread
+  if(S.activeTh===cid) S.activeTh=tid;
+  save(); render(); if(rosterThread) rerenderRoster();
+}
+
+function rosterDelete(e, pid, tid, cid){
+  promptDeleteChar(e, pid, tid, cid);
 }
 function rosterUploadImg(e, cid){
   e.stopPropagation(); closeAllGearMenus();
@@ -1947,11 +2252,12 @@ function toggleProfilePanel(){
   if(btn){
     btn.style.left=profCollapsed?'0':'280px';
     btn.textContent=profCollapsed?'▶':'◀';
+    btn.title=profCollapsed?'Expand profile':'Collapse profile';
   }
 }
 function resetProfilePanel(){
-  // Always open when switching to a new character
-  if(profCollapsed) toggleProfilePanel();
+  // Only reset to open if it was previously collapsed — respect user preference
+  // Don't force open on every character navigation
 }
 
 function renderCharView({proj,thread,char}){
@@ -1962,11 +2268,16 @@ function renderCharView({proj,thread,char}){
   document.getElementById('tb-ico').textContent=char.icon||'👤';
   document.getElementById('tb-nm').textContent=esc(char.name||'Unnamed Character');
   document.getElementById('tb-path').textContent=`${proj.name} › ${thread.name}`;
-  // Hide broadcast/receive/sys buttons — character has its own footer controls
-  ['bc','rx','sys'].forEach(n=>{
+  // Hide broadcast/sys buttons on character view — but keep Receives available
+  ['bc','sys'].forEach(n=>{
+    document.getElementById('btn-'+n).style.display='none';
     document.getElementById('btn-'+n).classList.toggle('on',false);
     document.getElementById('panel-'+n).classList.toggle('open',false);
   });
+  const rxBtn=document.getElementById('btn-rx');
+  rxBtn.style.display='';
+  rxBtn.classList.toggle('on',false);
+  document.getElementById('panel-rx').classList.toggle('open',false);
   // Avatar — image or emoji
   const emojiEl=document.getElementById('char-avatar-emoji');
   const imgEl=document.getElementById('char-avatar-img');
@@ -2302,10 +2613,10 @@ function renderSumPreview(t){
 function renderRxList(t){
   const list=document.getElementById('rx-list'); const empty=document.getElementById('rx-empty');
   const cands=[];
-  for(const p of S.projects) for(let i=0;i<p.threads.length;i++){
+  for(const p of S.projects){if(!Array.isArray(p.threads))continue; for(let i=0;i<p.threads.length;i++){
     const th=p.threads[i]; if(th.id===t.id) continue; ensure(th);
     cands.push({p,th,order:i});
-  }
+  }}
   if(!cands.length){list.innerHTML='';empty.style.display='block';return;}
   empty.style.display='none';
   // Sort: same project first, by order
@@ -2380,10 +2691,18 @@ function buildMsgHTML(m){
 function togglePanel(name){
   S.openPanel=S.openPanel===name?null:name;
   ['bc','rx','sys'].forEach(n=>{
-    document.getElementById('panel-'+n).classList.toggle('open',S.openPanel===n);
-    document.getElementById('btn-'+n).classList.toggle('on',S.openPanel===n);
+    const el=document.getElementById('panel-'+n);
+    const btn=document.getElementById('btn-'+n);
+    if(el) el.classList.toggle('open',S.openPanel===n);
+    if(btn) btn.classList.toggle('on',S.openPanel===n);
   });
-  if(name==='rx'){const t=getTh();if(t)renderRxList(t);}
+  if(name==='rx'){
+    // Use active thread or fall back to the character's parent thread
+    const t=getTh();
+    const charData=getActiveChar();
+    const target=t||(charData?charData.char:null);
+    if(target) renderRxList(target);
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -2575,6 +2894,353 @@ async function callLLM(t,key){
     const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${key}`},body:JSON.stringify({model,messages:ms,max_tokens:1500})});
     if(!r.ok){const e=await r.json();throw new Error(e.error?.message||r.statusText);}
     const d=await r.json();return d.choices[0].message.content;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// WRITE TAB — prose editor
+// ─────────────────────────────────────────────────────────────────────────────
+const WRITE_TYPES = ['plot','chapter']; // only these get documents
+let activeDocId = null; // { projId, threadId }
+let writeAIOpen = false;
+let writeAIHistory = [];
+let writeAIContextThreads = new Set();
+let writeSelText = '';
+let writeSaveTimer = null;
+
+function getWritableDocs(){
+  const docs = [];
+  for(const p of S.projects){
+    if(!p||p.__meta__||p.__usage__) continue;
+    if(!p.threads||!Array.isArray(p.threads)) continue;
+    for(const t of p.threads){
+      if(!t||!t.type) continue;
+      if(WRITE_TYPES.includes(t.type)) docs.push({proj:p, thread:t});
+    }
+  }
+  return docs;
+}
+
+function renderWriteDocList(){
+  const el = document.getElementById('write-doc-items');
+  const docs = getWritableDocs();
+  if(!docs.length){
+    el.innerHTML='<div class="write-doc-empty">No book or chapter threads yet.<br>Create one in the Develop tab.</div>';
+    return;
+  }
+  // Group by project
+  const byProj = {};
+  docs.forEach(({proj,thread})=>{
+    if(!byProj[proj.id]) byProj[proj.id]={proj,threads:[]};
+    byProj[proj.id].threads.push(thread);
+  });
+  el.innerHTML = Object.values(byProj).map(({proj,threads})=>`
+    <div class="write-doc-group">
+      <div class="write-doc-proj-label">${esc(proj.name)}</div>
+      ${threads.map(t=>{
+        const words = t.doc ? t.doc.replace(/<[^>]+>/g,'').trim().split(/\s+/).filter(Boolean).length : 0;
+        const isActive = activeDocId && activeDocId.projId===proj.id && activeDocId.threadId===t.id;
+        return `<div class="write-doc-item${isActive?' active':''}" onclick="openWriteDoc('${proj.id}','${t.id}')">
+          <span class="wdi-ico">${t.type==='plot'?'📖':'📄'}</span>
+          <div class="wdi-info">
+            <div class="wdi-name">${esc(t.name)}</div>
+            <div class="wdi-meta">${words} words</div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`).join('');
+  // Also update AI context pills
+  renderWriteAIContext();
+}
+
+function openWriteDoc(projId, threadId){
+  activeDocId = {projId, threadId};
+  writeAIHistory = [];
+  // Show editor, hide no-doc
+  document.getElementById('write-no-doc').style.display='none';
+  const area = document.getElementById('write-editor-area');
+  area.style.display='flex';
+  // Load doc content
+  const proj = S.projects.find(p=>p.id===projId);
+  const thread = proj?.threads?.find(t=>t.id===threadId);
+  if(!thread) return;
+  const editor = document.getElementById('write-editor');
+  editor.innerHTML = thread.doc || '';
+  editor.style.fontFamily = thread.docFont || "'Crimson Pro',Georgia,serif";
+  // Restore font selector
+  const fontSel = document.getElementById('wt-font');
+  if(fontSel) fontSel.value = thread.docFont || "'Crimson Pro',Georgia,serif";
+  // Reset double spacing
+  isDoubleSpaced = false;
+  editor.classList.remove('double-spaced');
+  const spacingBtn = document.getElementById('wt-spacing');
+  if(spacingBtn) spacingBtn.classList.remove('active');
+  editor.setAttribute('data-placeholder', `Start writing "${thread.name}"…`);
+  updateWriteWordCount();
+  updateWriteStatus('');
+  // Clear AI chat
+  document.getElementById('write-ai-msgs').innerHTML='';
+  // Re-render doc list to update active state
+  renderWriteDocList();
+  // Focus editor
+  setTimeout(()=>editor.focus(), 50);
+}
+
+function writeExecFormat(cmd, val){
+  document.getElementById('write-editor').focus();
+  document.execCommand(cmd, false, val||null);
+  updateWriteToolbar();
+  onWriteInput();
+}
+
+function updateWriteToolbar(){
+  document.querySelectorAll('.wt-btn').forEach(btn=>{
+    // Update active states for bold/italic/underline
+  });
+}
+
+function onWriteInput(){
+  updateWriteWordCount();
+  scheduleSaveDoc();
+}
+
+function scheduleSaveDoc(){
+  updateWriteStatus('saving');
+  clearTimeout(writeSaveTimer);
+  writeSaveTimer = setTimeout(saveDocNow, 1200);
+}
+
+function saveDocNow(){
+  if(!activeDocId) return;
+  const proj = S.projects.find(p=>p.id===activeDocId.projId);
+  const thread = proj?.threads?.find(t=>t.id===activeDocId.threadId);
+  if(!thread) return;
+  thread.doc = document.getElementById('write-editor').innerHTML;
+  save();
+  updateWriteStatus('saved');
+  renderWriteDocList();
+}
+
+function updateWriteStatus(state){
+  const el = document.getElementById('write-save-status');
+  if(!el) return;
+  if(state==='saving'){ el.textContent='Saving…'; el.className='write-save-status saving'; }
+  else if(state==='saved'){ el.textContent='✓ Saved'; el.className='write-save-status saved'; setTimeout(()=>{el.textContent='';el.className='write-save-status';},2000); }
+  else { el.textContent=''; el.className='write-save-status'; }
+}
+
+function handleWriteKey(e){
+  // Tab inserts spaces instead of changing focus
+  if(e.key==='Tab'){ e.preventDefault(); document.execCommand('insertText',false,'    '); }
+}
+
+function toggleWriteDocList(){
+  const panel = document.getElementById('write-doc-list');
+  const tab = document.getElementById('write-doc-expand-tab');
+  const collapsed = panel.classList.toggle('collapsed');
+  if(tab) tab.style.display = collapsed ? 'flex' : 'none';
+}
+
+function toggleWriteToolbar(){
+  const toolbar = document.getElementById('write-toolbar');
+  const chev = document.getElementById('wtb-chev');
+  const open = toolbar.classList.toggle('open');
+  chev.classList.toggle('open', open);
+}
+
+function writeChangeFont(fontFamily){
+  const editor = document.getElementById('write-editor');
+  editor.style.fontFamily = fontFamily;
+  // Save font preference for this doc
+  if(activeDocId){
+    const proj = S.projects.find(p=>p.id===activeDocId.projId);
+    const thread = proj?.threads?.find(t=>t.id===activeDocId.threadId);
+    if(thread){ thread.docFont = fontFamily; save(); }
+  }
+}
+
+let isDoubleSpaced = false;
+function toggleDoubleSpace(){
+  isDoubleSpaced = !isDoubleSpaced;
+  const editor = document.getElementById('write-editor');
+  editor.classList.toggle('double-spaced', isDoubleSpaced);
+  const btn = document.getElementById('wt-spacing');
+  btn.classList.toggle('active', isDoubleSpaced);
+  btn.title = isDoubleSpaced ? 'Switch to single spacing' : 'Switch to double spacing';
+}
+
+function formatWordCount(words){
+  if(words < 10000) return words.toLocaleString() + ' word' + (words!==1?'s':'');
+  if(words < 1000000) return (words/1000).toFixed(1).replace(/\.0$/,'') + 'k words';
+  return (words/1000000).toFixed(1) + 'm words';
+}
+
+function updateWriteWordCount(){
+  const editor = document.getElementById('write-editor');
+  const text = editor.innerText || '';
+  const words = text.trim() ? text.trim().split(/\s+/).filter(Boolean).length : 0;
+  const el = document.getElementById('write-wordcount');
+  if(el) el.textContent = formatWordCount(words);
+}
+
+// ── Text selection → AI bar indicator ────────────────────────────────────
+function onWriteSelect(){
+  const sel = window.getSelection();
+  const text = sel?.toString().trim();
+  if(!text || text.length < 3){
+    writeSelText = '';
+    updateWriteAIBarLabel();
+    return;
+  }
+  writeSelText = text;
+  updateWriteAIBarLabel();
+  // If AI bar is open, show the indicator immediately
+  if(writeAIOpen) showWriteSelIndicator();
+}
+
+function updateWriteAIBarLabel(){
+  const label = document.getElementById('write-ai-bar-label');
+  if(!label) return;
+  if(writeSelText){
+    label.textContent = `✦ Ask AI about selection`;
+    label.style.color = 'var(--ghost-light)';
+  } else {
+    label.textContent = '✦ Ask AI';
+    label.style.color = '';
+  }
+}
+
+function showWriteSelIndicator(){
+  const ind = document.getElementById('write-ai-sel-indicator');
+  const txt = document.getElementById('write-ai-sel-text');
+  if(!ind||!txt) return;
+  if(writeSelText){
+    txt.textContent = `"${writeSelText.slice(0,80)}${writeSelText.length>80?'…':''}"`;
+    ind.classList.add('visible');
+  } else {
+    ind.classList.remove('visible');
+  }
+}
+
+function clearWriteSel(){
+  writeSelText = '';
+  document.getElementById('write-ai-sel-indicator').classList.remove('visible');
+  updateWriteAIBarLabel();
+  document.getElementById('write-ai-inp').placeholder = 'Ask a question about your writing…';
+}
+
+document.addEventListener('mousedown', ()=>{
+  // Clear selection text when clicking elsewhere (but not in AI bar)
+});
+
+function writeSelToAI(){
+  // No longer needed — handled inline
+}
+
+function toggleWriteAI(){
+  writeAIOpen = !writeAIOpen;
+  document.getElementById('write-ai-body').classList.toggle('open', writeAIOpen);
+  document.getElementById('write-ai-chev').classList.toggle('open', writeAIOpen);
+  if(writeAIOpen){
+    if(writeSelText) showWriteSelIndicator();
+    document.getElementById('write-ai-inp').focus();
+  } else {
+    document.getElementById('write-ai-sel-indicator').classList.remove('visible');
+  }
+}
+
+function renderWriteAIContext(){
+  if(!activeDocId) return;
+  const proj = S.projects.find(p=>p.id===activeDocId.projId);
+  if(!proj) return;
+  const el = document.getElementById('write-ai-context');
+  const contextable = proj.threads.filter(t=>!WRITE_TYPES.includes(t.type)&&t.id!==activeDocId.threadId);
+  el.innerHTML = '<span class="write-ai-ctx-label">Context:</span>' +
+    contextable.map(t=>{
+      const on = writeAIContextThreads.has(t.id);
+      return `<span class="write-ai-ctx-pill${on?' on':''}" onclick="toggleWriteCtx('${t.id}',this)">${esc(t.name)}</span>`;
+    }).join('');
+}
+
+function toggleWriteCtx(tid, el){
+  if(writeAIContextThreads.has(tid)){ writeAIContextThreads.delete(tid); el.classList.remove('on'); }
+  else { writeAIContextThreads.add(tid); el.classList.add('on'); }
+}
+
+function writeAIKey(e){
+  if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); sendWriteAI(); }
+}
+
+function addWriteAIMsg(role, content, selText){
+  const msgs = document.getElementById('write-ai-msgs');
+  const div = document.createElement('div');
+  div.className = 'write-ai-msg ' + role;
+  const selPart = selText ? `<span class="wai-sel">Re: "${selText.slice(0,80)}${selText.length>80?'…':''}"</span>` : '';
+  div.innerHTML = selPart + (role==='assistant' ? fmt(content) : esc(content));
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+async function sendWriteAI(){
+  const inp = document.getElementById('write-ai-inp');
+  const question = inp.value.trim();
+  if(!question) return;
+  const key = document.getElementById('api-key').value.trim();
+  if(!key){ alert('Enter your API key in the ⚙ Settings menu.'); return; }
+  if(!checkUsageLimit()){ showUpgradePrompt(); return; }
+
+  const selText = writeSelText;
+  inp.value=''; inp.style.height='auto'; inp.placeholder='Ask a question about your writing…';
+  writeSelText='';
+
+  const userMsg = selText ? `Re: "${selText}"\n\n${question}` : question;
+  addWriteAIMsg('user', question, selText);
+  writeAIHistory.push({role:'user', content: userMsg});
+
+  const sendBtn = document.getElementById('write-ai-send');
+  sendBtn.disabled = true;
+
+  // Build system prompt with context
+  const proj = S.projects.find(p=>p.id===activeDocId?.projId);
+  const thread = proj?.threads?.find(t=>t.id===activeDocId?.threadId);
+  let system = `You are a writing assistant helping with a document called "${thread?.name||'this document'}". `;
+  system += 'Answer questions about the writing, suggest improvements, check grammar, or discuss the story. ';
+  system += 'Never rewrite large sections unless explicitly asked. Keep responses concise and focused.\n\n';
+  // Add context from selected threads
+  writeAIContextThreads.forEach(tid=>{
+    const t = proj?.threads?.find(x=>x.id===tid);
+    if(!t) return;
+    if(t.broadcastNotes) system += `[${t.name} — Notes]: ${t.broadcastNotes}\n`;
+    if(t.broadcastSummary) system += `[${t.name} — Summary]: ${t.broadcastSummary}\n`;
+    if(t.type==='characters'&&t.characters){
+      t.characters.forEach(c=>{
+        if(c.broadcastProfile&&c.profile){
+          const pf=c.profile;
+          system += `[Character: ${c.name}]: Role: ${pf.role||'—'}. Traits: ${(pf.traits||[]).join(', ')||'—'}. Motivation: ${pf.motivation||'—'}.\n`;
+        }
+      });
+    }
+  });
+
+  try{
+    const provider = document.getElementById('provider-sel').value;
+    const model = document.getElementById('model-sel').value;
+    let reply='';
+    if(provider==='anthropic'){
+      const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model,max_tokens:800,system,messages:writeAIHistory})});
+      const d=await r.json();reply=d.content?.map(b=>b.text||'').join('')||'';
+    } else {
+      const msgs=[{role:'system',content:system},...writeAIHistory];
+      const r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${key}`},body:JSON.stringify({model,messages:msgs,max_tokens:800})});
+      const d=await r.json();reply=d.choices?.[0]?.message?.content||'';
+    }
+    writeAIHistory.push({role:'assistant',content:reply});
+    addWriteAIMsg('assistant',reply,'');
+    incrementUsage();
+  }catch(e){
+    addWriteAIMsg('assistant','⚠ Error: '+e.message,'');
+  }finally{
+    sendBtn.disabled=false;
   }
 }
 
@@ -2797,6 +3463,18 @@ function openFromFlow(pid,tid){
 // PROJECT / THREAD OPS
 // ─────────────────────────────────────────────────────────────────────────────
 function toggleProj(id){S.activeProj=S.activeProj===id?null:id;if(S.activeProj!==id)S.activeTh=null;S.openPanel=null;render();}
+function toggleCharFolder(e, tid){
+  e.stopPropagation();
+  if(S.openCharFolders.has(tid)){
+    S.openCharFolders.delete(tid);
+    S.charFolderManualClose.add(tid); // remember user closed it
+  } else {
+    S.openCharFolders.add(tid);
+    S.charFolderManualClose.delete(tid); // user opened it, clear manual close
+  }
+  renderSidebar();
+}
+
 function selTh(pid,tid){S.activeProj=pid;S.activeTh=tid;S.openPanel=null;if(S.curView!=='chat')switchView('chat');render();}
 function renderIconPicker(){document.getElementById('icon-row').innerHTML=ICONS.map(i=>`<span class="icon-opt${i===S.newProjIcon?' sel':''}" onclick="selIcon('${i}')">${i}</span>`).join('');}
 function renderColorPicker(){document.getElementById('color-row').innerHTML=COLORS.map(c=>`<span class="color-opt${c===S.newProjColor?' sel':''}" style="background:${c}" onclick="selColor('${c}')"></span>`).join('');}
@@ -2820,6 +3498,84 @@ function createThread(){
   }
   p.threads.push(t);S.activeProj=p.id;S.activeTh=t.id;save();closeModal('th-modal');render();
 }
+function startRenameProjInline(e, pid){
+  e.stopPropagation();
+  e.preventDefault();
+  const p=S.projects.find(x=>x.id===pid); if(!p) return;
+  const span=e.target;
+  const current=p.name;
+  const inp=document.createElement('input');
+  inp.className='sb-rename-inp';
+  inp.value=current;
+  span.replaceWith(inp);
+  inp.focus(); inp.select();
+  function commit(){
+    const val=inp.value.trim()||current;
+    p.name=val;
+    save(); renderSidebar();
+  }
+  inp.addEventListener('blur', commit);
+  inp.addEventListener('keydown', e=>{
+    if(e.key==='Enter'){ e.stopPropagation(); inp.blur(); }
+    if(e.key==='Escape'){ inp.value=current; inp.blur(); }
+  });
+}
+
+function startRenameThreadInline(e, pid, tid){
+  e.stopPropagation();
+  e.preventDefault();
+  const p=S.projects.find(x=>x.id===pid); if(!p) return;
+  const t=p.threads.find(x=>x.id===tid); if(!t) return;
+  const span=e.target;
+  const current=t.name;
+  const inp=document.createElement('input');
+  inp.className='sb-rename-inp';
+  inp.value=current;
+  span.replaceWith(inp);
+  inp.focus(); inp.select();
+  function commit(){
+    const val=inp.value.trim()||current;
+    t.name=val;
+    save(); renderSidebar();
+    if(S.activeTh===tid){
+      const ord=p.threads.findIndex(x=>x.id===tid)+1;
+      document.getElementById('tb-nm').textContent=`${ord}. ${val}`;
+    }
+  }
+  inp.addEventListener('blur', commit);
+  inp.addEventListener('keydown', ev=>{
+    if(ev.key==='Enter'){ ev.stopPropagation(); inp.blur(); }
+    if(ev.key==='Escape'){ inp.value=current; inp.blur(); }
+  });
+}
+
+function startRenameCharInline(e, pid, tid, cid){
+  e.stopPropagation();
+  e.preventDefault();
+  const p=S.projects.find(x=>x.id===pid); if(!p) return;
+  const t=p.threads.find(x=>x.id===tid); if(!t) return;
+  const c=t.characters?.find(x=>x.id===cid); if(!c) return;
+  const span=e.target;
+  const current=c.name||'Unnamed';
+  const inp=document.createElement('input');
+  inp.className='sb-rename-inp';
+  inp.value=current;
+  span.replaceWith(inp);
+  inp.focus(); inp.select();
+  function commit(){
+    const val=inp.value.trim()||current;
+    c.name=val;
+    save(); renderSidebar();
+    // Update topbar if this char is active
+    if(S.activeTh===cid) document.getElementById('tb-nm').textContent=val;
+  }
+  inp.addEventListener('blur', commit);
+  inp.addEventListener('keydown', e=>{
+    if(e.key==='Enter'){ e.stopPropagation(); inp.blur(); }
+    if(e.key==='Escape'){ inp.value=current; inp.blur(); }
+  });
+}
+
 function startRenameThread(){
   const t=getTh(); if(!t) return;
   const el=document.getElementById('tb-nm');
@@ -2836,7 +3592,7 @@ function startRenameThread(){
     save();
     inp.replaceWith(el);
     const p=getProj();
-    const ord=p?p.threads.findIndex(x=>x.id===t.id)+1:0;
+    const ord=p&&Array.isArray(p.threads)?p.threads.findIndex(x=>x.id===t.id)+1:0;
     el.textContent=`${ord}. ${val}`;
     renderSidebar();
   }
@@ -2858,8 +3614,60 @@ function startRenameProj(e, pid){
   renderSidebar();
 }
 
-function clearThread(){const t=getTh();if(!t)return;if(!confirm('Clear all messages?'))return;t.messages=[];save();renderMsgs();}
-function delThread(){if(!confirm('Delete this thread?'))return;const p=getProj();if(!p)return;p.threads=p.threads.filter(t=>t.id!==S.activeTh);S.activeTh=null;save();render();}
+function clearThread(){
+  // On character view — clear broadcast/receive selections
+  const charData=getActiveChar();
+  if(charData){
+    const c=charData.char;
+    ensure(c);
+    c.receivesFrom=[];
+    c.broadcast={sys:false,notes:false,summary:false};
+    c.broadcastNotes=''; c.broadcastSummary='';
+    save();
+    // Re-render rx panel if open
+    if(S.openPanel==='rx') renderRxList(c);
+    const btn=document.querySelector('.ba:not(.danger)');
+    return;
+  }
+  // On normal thread — clear broadcast/receive selections
+  const t=getTh(); if(!t) return;
+  ensure(t);
+  t.receivesFrom=[];
+  t.broadcast={sys:false,notes:false,summary:false};
+  t.broadcastNotes=''; t.broadcastSummary='';
+  save(); renderSidebar(); renderCtxPanel(t);
+  if(S.openPanel==='rx') renderRxList(t);
+  if(S.openPanel==='bc'){
+    document.getElementById('bc-sys').checked=false;
+    document.getElementById('bc-notes').checked=false;
+    document.getElementById('bc-sum').checked=false;
+    document.getElementById('bc-notes-txt').value='';
+  }
+}
+
+let pendingDelThread=null;
+function delThread(){
+  const charData=getActiveChar();
+  if(charData){
+    // Delete character
+    promptDeleteChar(null, charData.proj.id, charData.thread.id, charData.char.id);
+    return;
+  }
+  const t=getTh(); if(!t) return;
+  const p=getProj(); if(!p) return;
+  pendingDelThread={pid:p.id, tid:t.id};
+  document.getElementById('del-thread-name').textContent=t.name;
+  document.getElementById('del-thread-modal').style.display='flex';
+}
+
+function confirmDelThread(){
+  closeModal('del-thread-modal');
+  if(!pendingDelThread) return;
+  const {pid,tid}=pendingDelThread; pendingDelThread=null;
+  const p=S.projects.find(x=>x.id===pid); if(!p) return;
+  p.threads=p.threads.filter(t=>t.id!==tid);
+  S.activeTh=null; save(); render();
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // IMPORT — file reading for .txt, .md, .rtf, .docx
@@ -3044,7 +3852,7 @@ function renderCritiqueScopes(){
   scopes.push({id:'worldbuilding',ico:'🌍',nm:'World Building',desc:'All world/lore threads'});
   // Per-project scopes
   for(const p of S.projects){
-    scopes.push({id:'proj:'+p.id,ico:p.icon,nm:p.name,desc:`All ${p.threads.length} thread${p.threads.length!==1?'s':''}`});
+    const ptlen=Array.isArray(p.threads)?p.threads.length:0;scopes.push({id:'proj:'+p.id,ico:p.icon,nm:p.name,desc:`All ${ptlen} thread${ptlen!==1?'s':''}`});
     for(const t of p.threads){
       ensure(t);
       // Skip character folder threads — handled by the Characters card
@@ -3079,13 +3887,13 @@ function getSaveTarget(scope) {
     const pid = scope.slice(5);
     const p = S.projects.find(x => x.id === pid);
     if (!p) return null;
-    const overview = p.threads.find(t => t.type === 'overview') || p.threads[0];
+    const overview = Array.isArray(p.threads)?(p.threads.find(t => t.type === 'overview') || p.threads[0]):null;
     return overview ? { threadId: overview.id, threadName: overview.name } : null;
   }
   // everything / worldbuilding / characters — use series overview of active project
   const p = getProj();
   if (!p) return null;
-  const overview = p.threads.find(t => t.type === 'overview') || p.threads[0];
+  const overview = Array.isArray(p.threads)?(p.threads.find(t => t.type === 'overview') || p.threads[0]):null;
   return overview ? { threadId: overview.id, threadName: overview.name } : null;
 }
 
@@ -3441,6 +4249,7 @@ function toggleSidebar(){
   const tab=document.getElementById('sb-tab');
   const collapsed=sb.classList.toggle('collapsed');
   tab.style.display=collapsed?'flex':'none';
+
 }
 
 let ctxCollapsed=false;
@@ -3533,6 +4342,17 @@ setTimeout(()=>{
   }
   // If they were previously connected, silently try to reconnect via silent token request
   if(hadFile){
+    if(typeof google==='undefined'){
+      // GIS not loaded yet — retry once after a further delay
+      setTimeout(()=>{
+        if(typeof google==='undefined'||!google?.accounts?.oauth2) return;
+        try{
+          const client=google.accounts.oauth2.initTokenClient({client_id:CLIENT_ID,scope:SCOPES,prompt:'',callback:async(resp)=>{if(resp.error)return;driveState.token=resp.access_token;driveState.connected=true;await driveLoad();setSyncStatus('saved','Synced ✓');render();}});
+          client.requestAccessToken({prompt:''});
+        }catch(e){}
+      }, 2000);
+      return;
+    }
     try{
       const client = google.accounts.oauth2.initTokenClient({
         client_id: CLIENT_ID,
