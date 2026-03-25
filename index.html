@@ -1799,6 +1799,7 @@ function setMode(m){
 function switchView(v){
   S.curView=v;
   document.getElementById('view-chat').style.display=v==='chat'?'flex':'none';
+  if(v==='chat'){ document.getElementById('char-roster-view').style.display='none'; }
   document.getElementById('view-write').style.display=v==='write'?'flex':'none';
   document.getElementById('view-flow').style.display=v==='flow'?'flex':'none';
   document.getElementById('view-critique').style.display=v==='critique'?'flex':'none';
@@ -2029,19 +2030,7 @@ function findCharById(cid){
 
 function selChar(pid,tid,cid){
   S.activeProj=pid; S.activeTh=cid; S.openPanel=null;
-  // Always switch to chat/develop view to show character profile
-  if(S.curView!=='chat'){
-    S.curView='chat';
-    document.getElementById('view-chat').style.display='flex';
-    document.getElementById('view-write').style.display='none';
-    document.getElementById('view-flow').style.display='none';
-    document.getElementById('view-critique').style.display='none';
-    document.getElementById('char-roster-view').style.display='none';
-    document.getElementById('tab-chat').classList.add('active');
-    document.getElementById('tab-write').classList.remove('active');
-    document.getElementById('tab-flow').classList.remove('active');
-    document.getElementById('tab-crit').classList.remove('active');
-  }
+  switchView('chat');
   render();
 }
 
@@ -3475,7 +3464,19 @@ function toggleCharFolder(e, tid){
   renderSidebar();
 }
 
-function selTh(pid,tid){S.activeProj=pid;S.activeTh=tid;S.openPanel=null;if(S.curView!=='chat')switchView('chat');render();}
+let _selThTimer=null;
+function selTh(pid,tid){
+  clearTimeout(_selThTimer);
+  _selThTimer=setTimeout(()=>{
+    S.activeProj=pid;S.activeTh=tid;S.openPanel=null;
+    switchView('chat');render();
+  },220); // wait 220ms — if dblclick fires it cancels this
+}
+function selThNow(pid,tid){
+  clearTimeout(_selThTimer);
+  S.activeProj=pid;S.activeTh=tid;S.openPanel=null;
+  switchView('chat');render();
+}
 function renderIconPicker(){document.getElementById('icon-row').innerHTML=ICONS.map(i=>`<span class="icon-opt${i===S.newProjIcon?' sel':''}" onclick="selIcon('${i}')">${i}</span>`).join('');}
 function renderColorPicker(){document.getElementById('color-row').innerHTML=COLORS.map(c=>`<span class="color-opt${c===S.newProjColor?' sel':''}" style="background:${c}" onclick="selColor('${c}')"></span>`).join('');}
 function selIcon(i){S.newProjIcon=i;renderIconPicker();}
@@ -3499,6 +3500,7 @@ function createThread(){
   p.threads.push(t);S.activeProj=p.id;S.activeTh=t.id;save();closeModal('th-modal');render();
 }
 function startRenameProjInline(e, pid){
+  clearTimeout(_selThTimer);
   e.stopPropagation();
   e.preventDefault();
   const p=S.projects.find(x=>x.id===pid); if(!p) return;
@@ -3522,6 +3524,7 @@ function startRenameProjInline(e, pid){
 }
 
 function startRenameThreadInline(e, pid, tid){
+  clearTimeout(_selThTimer);
   e.stopPropagation();
   e.preventDefault();
   const p=S.projects.find(x=>x.id===pid); if(!p) return;
@@ -3550,6 +3553,7 @@ function startRenameThreadInline(e, pid, tid){
 }
 
 function startRenameCharInline(e, pid, tid, cid){
+  clearTimeout(_selThTimer);
   e.stopPropagation();
   e.preventDefault();
   const p=S.projects.find(x=>x.id===pid); if(!p) return;
